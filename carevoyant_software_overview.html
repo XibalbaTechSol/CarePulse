@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CareVoyant Home Care Software Overview</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 40px;
+            font-size: 2.5em;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+        }
+        .card {
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            overflow: hidden;
+            transition: transform 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        .card-image {
+            width: 100%;
+            height: 250px;
+            object-fit: cover; /* or contain, depending on preference */
+            object-position: top;
+            background-color: #f0f0f0;
+            border-bottom: 1px solid #eee;
+        }
+        .card-content {
+            padding: 25px;
+            flex-grow: 1;
+        }
+        .card-title {
+            font-size: 1.5em;
+            color: #2c3e50;
+            margin-top: 0;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+            display: inline-block;
+        }
+        .card-description {
+            margin-bottom: 20px;
+            color: #555;
+            font-size: 0.95em;
+        }
+        .features-title {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            font-size: 0.85em;
+            letter-spacing: 1px;
+        }
+        .features-list {
+            padding-left: 20px;
+            margin: 0;
+            font-size: 0.9em;
+            color: #666;
+        }
+        .features-list li {
+            margin-bottom: 8px;
+        }
+        .features-list li strong {
+            color: #2980b9;
+        }
+        /* Special handling for the last card with two images */
+        .card-image-group {
+             display: flex;
+             height: 250px;
+        }
+        .card-image-half {
+            width: 50%;
+            height: 100%;
+            object-fit: cover;
+            object-position: top;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>CareVoyant Home Care Software Overview</h1>
+    
+    <div class="grid">
+
+        <!-- 1. Intake Manager -->
+        <div class="card">
+            <img src="https://images.squarespace-cdn.com/content/v1/5d98129f25863e4eb91b5bcd/d15f6809-2645-4131-8191-ca01d6e1bf3c/Intake+Manager.png" alt="Intake Manager" class="card-image">
+            <div class="card-content">
+                <h2 class="card-title">1. Intake Manager</h2>
+                <p class="card-description">The Intake Manager module serves as the central entry point for all new patient referrals and inquiries. It streamlines the admission process by capturing essential demographic and clinical information upfront, ensuring a smooth transition from referral to active care.</p>
+                <div class="features-title">Detailed Features</div>
+                <ul class="features-list">
+                    <li><strong>Centralized Referral Tracking:</strong> Manage incoming referrals from various sources in a single queue.</li>
+                    <li><strong>Eligibility Verification:</strong> Automated checks for insurance eligibility and coverage.</li>
+                    <li><strong>Document Management:</strong> Upload and store referral documents directly.</li>
+                    <li><strong>Workflow Automation:</strong> Assign tasks and automate notifications.</li>
+                    <li><strong>Duplicate Patient Check:</strong> Algorithms to prevent duplicate records.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 2. Service Authorization and Plan of Care -->
+        <div class="card">
+            <img src="https://images.squarespace-cdn.com/content/v1/5d98129f25863e4eb91b5bcd/1b3bcd5a-9edc-48d3-910b-dcc9c25f2fdf/Service+Authorization+and+Plan+of+Care.png" alt="Service Authorization and Plan of Care" class="card-image">
+            <div class="card-content">
+                <h2 class="card-title">2. Service Authorization & Plan of Care</h2>
+                <p class="card-description">This critical module ensures that all services provided are authorized by payers and aligned with the clinical Plan of Care (POC). It bridges the gap between clinical needs and financial reimbursement.</p>
+                <div class="features-title">Detailed Features</div>
+                <ul class="features-list">
+                    <li><strong>Authorization Tracking:</strong> Track authorized units, visits, or hours.</li>
+                    <li><strong>POC Compliance:</strong> Link scheduled visits directly to the Plan of Care.</li>
+                    <li><strong>Alerts & Notifications:</strong> Receive alerts for expiring authorizations.</li>
+                    <li><strong>485/Plan of Care Generation:</strong> Automatically generate CMS-485 forms.</li>
+                    <li><strong>Payer-Specific Rules:</strong> Configure authorization requirements by payer.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 3. Scheduling - Patient View -->
+        <div class="card">
+            <img src="https://images.squarespace-cdn.com/content/v1/5d98129f25863e4eb91b5bcd/57b18c8f-1bc9-4f1e-b95b-d48fdbe56b67/Scheduling+-+Patient+View.png" alt="Scheduling - Patient View" class="card-image">
+            <div class="card-content">
+                <h2 class="card-title">3. Scheduling - Patient View</h2>
+                <p class="card-description">The Patient View Scheduling interface focuses on matching the right caregiver to the patient based on needs, availability, and preferences. It is designed to optimize the patient's care schedule while minimizing gaps in coverage.</p>
+                <div class="features-title">Detailed Features</div>
+                <ul class="features-list">
+                    <li><strong>Caregiver Matching:</strong> Match caregivers based on skills and preferences.</li>
+                    <li><strong>Drag-and-Drop Scheduling:</strong> Intuitive interface for assigning visits.</li>
+                    <li><strong>Conflict Detection:</strong> Automated warnings for overlaps or overtime.</li>
+                    <li><strong>Recurrence Patterns:</strong> Easily set up recurring schedules.</li>
+                    <li><strong>Availability Tracking:</strong> View patient availability alongside caregivers.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 4. Real Time Schedule Monitor -->
+        <div class="card">
+            <img src="https://images.squarespace-cdn.com/content/v1/5d98129f25863e4eb91b5bcd/ac0ed8da-388b-4f05-8f44-03b620fce946/Real+Time+Schedule+Monitor.png" alt="Real Time Schedule Monitor" class="card-image">
+            <div class="card-content">
+                <h2 class="card-title">4. Real Time Schedule Monitor</h2>
+                <p class="card-description">A dashboard designed for coordinators and managers to oversee daily operations. It provides a live view of visit statuses, ensuring that all scheduled care is being delivered as planned.</p>
+                <div class="features-title">Detailed Features</div>
+                <ul class="features-list">
+                    <li><strong>Live Visit Status:</strong> Color-coded indicators for visit status.</li>
+                    <li><strong>Late Arrival Alerts:</strong> Notifications for missed check-ins.</li>
+                    <li><strong>GPS Verification:</strong> Map views showing caregiver locations.</li>
+                    <li><strong>Missed Visit Management:</strong> Tools to reschedule or document reasons.</li>
+                    <li><strong>Shift Coverage:</strong> Identify open shifts instantly.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 5. Clinical and Point of Care -->
+        <div class="card">
+            <img src="https://images.squarespace-cdn.com/content/v1/5d98129f25863e4eb91b5bcd/b5d3523e-74f6-4ca2-9b95-9229374922a5/Clinical+and+Point+of+Care.png" alt="Clinical and Point of Care" class="card-image">
+            <div class="card-content">
+                <h2 class="card-title">5. Clinical and Point of Care</h2>
+                <p class="card-description">The Point of Care (POC) solution enables clinicians and caregivers to document care directly at the patient's bedside or home. It ensures accurate, timely documentation and compliance.</p>
+                <div class="features-title">Detailed Features</div>
+                <ul class="features-list">
+                    <li><strong>OASIS Assessments:</strong> Integrated OASIS data sets with validation.</li>
+                    <li><strong>Electronic Health Record (EHR):</strong> Comprehensive access to patient history.</li>
+                    <li><strong>Offline Capability:</strong> Document care without internet connectivity.</li>
+                    <li><strong>Wound Care Management:</strong> Tools for tracking healing progress.</li>
+                    <li><strong>Medication Administration Record (MAR):</strong> Track medication adherence.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 6. EVV and CV Mobile -->
+        <div class="card">
+            <img src="https://images.squarespace-cdn.com/content/v1/5d98129f25863e4eb91b5bcd/70dfd966-f919-4a03-993d-417d7f147157/EVV+and+CV+Mobile.png" alt="EVV and CV Mobile" class="card-image">
+            <div class="card-content">
+                <h2 class="card-title">6. EVV and CV Mobile</h2>
+                <p class="card-description">The Electronic Visit Verification (EVV) and Mobile app suite allows caregivers to verify visits, document tasks, and communicate with the office, meeting federal mandates.</p>
+                <div class="features-title">Detailed Features</div>
+                <ul class="features-list">
+                    <li><strong>GPS & Time Verification:</strong> Capture exact location and time stamps.</li>
+                    <li><strong>Task Verification:</strong> Checklists for care plan tasks.</li>
+                    <li><strong>Patient Signature:</strong> Capture digital signatures.</li>
+                    <li><strong>Secure Messaging:</strong> HIPAA-compliant messaging.</li>
+                    <li><strong>Visit Note Entry:</strong> Enter notes directly from mobile.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 7. Billing and Accounts Receivables -->
+        <div class="card">
+            <img src="https://images.squarespace-cdn.com/content/v1/5d98129f25863e4eb91b5bcd/e0fe7576-4d14-4e06-9eff-53942910d64b/Billing+and+Accounts+Receivables.png" alt="Billing and Accounts Receivables" class="card-image">
+            <div class="card-content">
+                <h2 class="card-title">7. Billing & Accounts Receivables</h2>
+                <p class="card-description">An integrated financial module that automates the billing process for multiple payers. Designed to reduce days sales outstanding (DSO) and maximize revenue.</p>
+                <div class="features-title">Detailed Features</div>
+                <ul class="features-list">
+                    <li><strong>Multi-Payer Billing:</strong> Support for UB-04, CMS-1500, and electronic claims.</li>
+                    <li><strong>Claims Scrubbing:</strong> Validation rules to catch errors.</li>
+                    <li><strong>Automated Invoicing:</strong> Generate invoices for private pay.</li>
+                    <li><strong>Remittance Processing:</strong> Electronic remittance advice auto-posting.</li>
+                    <li><strong>AR Aging Reports:</strong> Detailed tracking of unpaid claims.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 8. Payroll Integration -->
+        <div class="card">
+            <img src="https://images.squarespace-cdn.com/content/v1/5d98129f25863e4eb91b5bcd/a3b3873f-c467-4f72-a0bf-9d937aec6e20/Payroll+Integration.png" alt="Payroll Integration" class="card-image">
+            <div class="card-content">
+                <h2 class="card-title">8. Payroll Integration</h2>
+                <p class="card-description">This module bridges the gap between scheduling/clinical documentation and payroll processing. It ensures caregivers are paid accurately for verified visits and travel time.</p>
+                <div class="features-title">Detailed Features</div>
+                <ul class="features-list">
+                    <li><strong>Automated Time Calculation:</strong> Calculate hours based on verified EVV data.</li>
+                    <li><strong>Differential Pay:</strong> Support for shift differentials and holiday pay.</li>
+                    <li><strong>Mileage & Expense Reimbursement:</strong> Track reimbursement.</li>
+                    <li><strong>General Ledger Interface:</strong> Export to payroll systems like ADP.</li>
+                    <li><strong>Split Shifts & Overtime:</strong> Handle complex calculations automatically.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 9. Family Portal -->
+        <div class="card">
+            <img src="https://images.squarespace-cdn.com/content/v1/5d98129f25863e4eb91b5bcd/9a587d67-b1db-4cb4-b927-8bff78bba8c2/Family+Portal.png" alt="Family Portal" class="card-image">
+            <div class="card-content">
+                <h2 class="card-title">9. Family Portal</h2>
+                <p class="card-description">A secure web portal designed to engage family members in their loved one's care. It provides transparency regarding schedules, care plans, and general well-being.</p>
+                <div class="features-title">Detailed Features</div>
+                <ul class="features-list">
+                    <li><strong>Schedule View:</strong> View upcoming visits and caregivers.</li>
+                    <li><strong>Care Plan Access:</strong> View the current plan of care.</li>
+                    <li><strong>Invoices & Payments:</strong> View statements and make payments.</li>
+                    <li><strong>Communication:</strong> Secure channel to communicate with the agency.</li>
+                    <li><strong>Visit History:</strong> Review past verified service delivery.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 10. Employee Portal -->
+        <div class="card">
+            <img src="https://images.squarespace-cdn.com/content/v1/5d98129f25863e4eb91b5bcd/dad4945c-27c4-4be0-932e-fe49539eaf99/Employee+Portal1.png" alt="Employee Portal" class="card-image">
+            <div class="card-content">
+                <h2 class="card-title">10. Employee Portal</h2>
+                <p class="card-description">A self-service portal for field staff and employees to manage their employment-related tasks, schedules, and credentials.</p>
+                <div class="features-title">Detailed Features</div>
+                <ul class="features-list">
+                    <li><strong>Schedule Management:</strong> View schedules and request shifts.</li>
+                    <li><strong>Time Off Requests:</strong> Submit vacation or sick leave requests.</li>
+                    <li><strong>Credentials Tracking:</strong> View expiration dates for licenses.</li>
+                    <li><strong>Pay Stub Access:</strong> View and download pay stubs.</li>
+                    <li><strong>Profile Management:</strong> Update contact info and availability.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 11. Care Coordination -->
+        <div class="card">
+            <img src="https://images.squarespace-cdn.com/content/v1/5d98129f25863e4eb91b5bcd/8267f326-f1b8-4c2d-bd81-2eaba8cb5081/Care+Coordination.png" alt="Care Coordination" class="card-image">
+            <div class="card-content">
+                <h2 class="card-title">11. Care Coordination</h2>
+                <p class="card-description">Facilitates communication and collaboration among the entire care team, including external physicians and other healthcare providers, for holistic patient care.</p>
+                <div class="features-title">Detailed Features</div>
+                <ul class="features-list">
+                    <li><strong>Secure Messaging:</strong> HIPAA-compliant internal messaging.</li>
+                    <li><strong>Task Assignment:</strong> Collaborative task management.</li>
+                    <li><strong>Physician Portal:</strong> Electronic order signing.</li>
+                    <li><strong>Event Notifications:</strong> Automated alerts for critical events.</li>
+                    <li><strong>Documentation Sharing:</strong> Securely share clinical notes.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 12. Reports and Dashboards -->
+        <div class="card">
+             <div class="card-image-group">
+                <img src="https://images.squarespace-cdn.com/content/v1/5d98129f25863e4eb91b5bcd/e0f6b704-7785-4ed6-9c8c-5301baefdd08/Reports.png" alt="Reports" class="card-image-half">
+                <img src="https://images.squarespace-cdn.com/content/v1/5d98129f25863e4eb91b5bcd/22a2520d-ca7f-4a73-a9dc-17ad824fc6c4/Dashboards.png" alt="Dashboards" class="card-image-half">
+            </div>
+            <div class="card-content">
+                <h2 class="card-title">12. Reports and Dashboards</h2>
+                <p class="card-description">Comprehensive reporting and analytics tools that provide actionable insights into clinical, financial, and operational performance.</p>
+                <div class="features-title">Detailed Features</div>
+                <ul class="features-list">
+                    <li><strong>Standard Reports Library:</strong> Hundreds of pre-built reports.</li>
+                    <li><strong>Custom Report Builder:</strong> Ad-hoc reporting tools.</li>
+                    <li><strong>Executive Dashboards:</strong> Visualizations of KPIs.</li>
+                    <li><strong>Quality Improvement:</strong> Reports for QAPI initiatives.</li>
+                    <li><strong>Export Capabilities:</strong> Export to Excel, PDF, or CSV.</li>
+                </ul>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+</body>
+</html>

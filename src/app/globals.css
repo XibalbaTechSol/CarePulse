@@ -1,42 +1,82 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* google light theme (inspired) */
+  --background: #f8f9fa;
+  /* google grey 50 */
+  --surface: #ffffff;
+  --surface-highlight: #f1f3f4;
+  /* google grey 100 */
+  --border: #dadce0;
+  /* google grey 300 */
+  --primary: #1a73e8;
+  /* google blue 600 */
+  --primary-hover: #1557b0;
+  --primary-subtle: #e8f0fe;
+  /* google blue 50 */
+  --primary-ring: rgba(26, 115, 232, 0.2);
+  --text-primary: #202124;
+  /* google grey 900 */
+  --text-secondary: #5f6368;
+  /* google grey 700 */
+  --text-tertiary: #80868b;
+  --success: #188038;
+  --warning: #f29900;
+  --error: #d93025;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+.dark {
+  /* google dark theme (inspired) */
+  --background: #202124;
+  --surface: #292a2d;
+  --surface-highlight: #35363a;
+  --border: #3c4043;
+  --primary: #8ab4f8;
+  /* google blue 200 */
+  --primary-hover: #aecbfa;
+  --primary-subtle: #303134;
+  /* dark subtle */
+  --primary-ring: rgba(138, 180, 248, 0.2);
+  --text-primary: #e8eaed;
+  --text-secondary: #9aa0a6;
+  --text-tertiary: #80868b;
+  --success: #81c995;
+  --warning: #fdd663;
+  --error: #f28b82;
+}
+
+@layer base {
+  body {
+    @apply bg-background text-text-primary font-sans antialiased transition-colors duration-200;
   }
 }
 
-html,
-body {
-  max-width: 100vw;
-  overflow-x: hidden;
+@layer components {
+  .card {
+    @apply bg-surface border border-border rounded-lg shadow-sm overflow-hidden;
+  }
+
+  .card-hover {
+    @apply hover:shadow-md transition-shadow duration-200;
+  }
+
+  .btn-primary {
+    @apply bg-primary hover:bg-primary-hover text-white font-medium py-2 px-4 rounded-md transition-colors shadow-sm flex items-center justify-center gap-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-outline {
+    @apply bg-transparent border border-border text-text-primary hover:bg-surface-highlight font-medium py-2 px-4 rounded-md transition-colors flex items-center justify-center gap-2 text-sm;
+  }
+
+  .input {
+    @apply w-full px-3 py-2 bg-surface border border-border rounded-md text-text-primary placeholder:text-text-tertiary focus:outline-none focus:ring-2 focus:ring-primary-ring focus:border-primary transition-all text-sm;
+  }
 }
 
-body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-* {
-  box-sizing: border-box;
-  padding: 0;
-  margin: 0;
-}
-
-a {
-  color: inherit;
-  text-decoration: none;
-}
-
-@media (prefers-color-scheme: dark) {
-  html {
-    color-scheme: dark;
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
   }
 }
