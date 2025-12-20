@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "DATABASE_URL=file:/home/xibalbasolutions/NextivaClone/prisma/dev.db next start",
+    "start": "next start",
     "lint": "eslint",
     "test": "playwright test",
     "test:e2e": "playwright test"
@@ -17,10 +17,8 @@
     "@dnd-kit/sortable": "^10.0.0",
     "@dnd-kit/utilities": "^3.2.2",
     "@google/generative-ai": "^0.24.1",
-    "@prisma/adapter-better-sqlite3": "^7.2.0",
     "@prisma/client": "^7.2.0",
     "ai": "^5.0.115",
-    "better-sqlite3": "^12.5.0",
     "clsx": "^2.1.1",
     "imapflow": "^1.2.1",
     "jose": "^6.1.3",
@@ -39,7 +37,6 @@
   },
   "devDependencies": {
     "@playwright/test": "^1.57.0",
-    "@types/better-sqlite3": "^7.6.13",
     "@types/leaflet": "^1.9.21",
     "@types/node": "^20",
     "@types/react": "^19",

@@ -21,7 +21,7 @@
 ## 🛠️ Tech Stack
 
 - **Framework**: [Next.js 15](https://nextjs.org/) (App Router)
-- **Database**: [Prisma](https://www.prisma.io/) with SQLite (Dev) / Postgres (Prod)
+- **Database**: [Prisma](https://www.prisma.io/) with **PostgreSQL** (Production-ready)
 - **Styling**: Vanilla CSS with modern "Glassmorphism" aesthetics and premium UI/UX.
 - **Icons**: [Lucide React](https://lucide.dev/)
 - **State Management**: React Context & Hooks
@@ -42,7 +42,7 @@
 3. **Environment Setup**:
    Create a `.env` file in the root directory:
    ```env
-   DATABASE_URL="file:./dev.db"
+   DATABASE_URL="postgresql://USER:PASSWORD@HOST:PORT/DATABASE?schema=public"
    # Add third-party API keys here (SRFax, SendGrid, etc.)
    ```
 
@@ -56,6 +56,15 @@
    ```bash
    npm run dev
    ```
+
+## 💾 Database Migration (SQLite to PostgreSQL)
+
+We have migrated from SQLite to **PostgreSQL** to meet the requirements of a clinical-grade healthcare platform:
+
+- **Scalability**: Seamlessly handles increasing patient loads and data complexity.
+- **High Concurrency**: Supports multiple simultaneous writes from caregivers and admins without "database locked" errors.
+- **Enterprise Security**: Simplifies management of encryption-at-rest, point-in-time recovery, and HIPAA-compliant audit logs.
+- **Relational Integrity**: Superior handling of complex healthcare data relationships and clinical assessments.
 
 ## ⚙️ Module Configuration
 
