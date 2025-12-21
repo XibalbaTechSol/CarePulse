@@ -1,12 +1,14 @@
 'use client';
 
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { useChat } from '@ai-sdk/react';
-import { Send, Bot, User, Sparkles } from 'lucide-react';
+import { Send, User, Sparkles } from 'lucide-react';
+import AudioPulse from './AudioPulse';
 
 export default function ChatInterface() {
     const { messages, append, isLoading } = useChat() as any; // eslint-disable-line @typescript-eslint/no-explicit-any
-    const [input, setInput] = React.useState('');
+    const [input, setInput] = useState('');
+    const [volume, setVolume] = useState(0);
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -20,7 +22,6 @@ export default function ChatInterface() {
         setInput('');
     };
 
-
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     };
@@ -28,6 +29,22 @@ export default function ChatInterface() {
     useEffect(() => {
         scrollToBottom();
     }, [messages]);
+
+    // Mock volume effect when loading
+    useEffect(() => {
+        let interval: NodeJS.Timeout;
+        if (isLoading) {
+            interval = setInterval(() => {
+                setVolume(Math.random() * 0.15 + 0.05); // Subtle oscillation
+            }, 150);
+        } else {
+            setVolume(0);
+        }
+
+        return () => {
+            if (interval) clearInterval(interval);
+        };
+    }, [isLoading]);
 
     return (
         <div className="flex flex-col h-[600px] w-full max-w-4xl mx-auto glass overflow-hidden border border-[var(--glass-border)]">
@@ -40,21 +57,23 @@ export default function ChatInterface() {
             {/* Messages Area */}
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
                 {messages.length === 0 && (
-                    <div className="text-center text-[var(--text-muted)] mt-10">
-                        <Bot size={48} className="mx-auto mb-4 opacity-50" />
+                    <div className="text-center text-[var(--text-muted)] mt-10 flex flex-col items-center">
+                        <div className="mb-4 opacity-50">
+                            <AudioPulse active={false} volume={0} hover={true} />
+                        </div>
                         <p className="text-lg">How can I help you today?</p>
                         <p className="text-sm opacity-75">Ask me about your leads, deals, or schedule.</p>
                     </div>
                 )}
 
-                {messages.map((m: any) => (
+                {messages.map((m: { id: string, role: string, content: string }) => (
                     <div
                         key={m.id}
                         className={`flex gap-3 ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}
                     >
                         {m.role !== 'user' && (
                             <div className="w-8 h-8 rounded-full bg-[rgba(6,182,212,0.1)] flex items-center justify-center shrink-0">
-                                <Bot size={16} className="text-[var(--accent)]" />
+                                <AudioPulse active={false} volume={0} />
                             </div>
                         )}
 
@@ -79,7 +98,7 @@ export default function ChatInterface() {
                 {isLoading && (
                     <div className="flex gap-3 justify-start">
                         <div className="w-8 h-8 rounded-full bg-[rgba(6,182,212,0.1)] flex items-center justify-center shrink-0">
-                            <Bot size={16} className="text-[var(--accent)]" />
+                            <AudioPulse active={true} volume={volume} />
                         </div>
                         <div className="bg-[var(--glass-bg)] border border-[var(--glass-border)] rounded-2xl rounded-bl-none p-3 flex items-center gap-1">
                             <div className="w-2 h-2 bg-[var(--text-muted)] rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
@@ -109,6 +128,6 @@ export default function ChatInterface() {
                     </button>
                 </div>
             </form>
-        </div >
+        </div>
     );
 }

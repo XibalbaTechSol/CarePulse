@@ -2,6 +2,7 @@
 
 import { ImapFlow } from 'imapflow';
 import { prisma } from '@/lib/db';
+import { decrypt } from '@/lib/encryption';
 
 export async function getRealEmailsAction(userId: string) {
     try {
@@ -28,7 +29,7 @@ export async function getRealEmailsAction(userId: string) {
             secure: account.imapPort === 993,
             auth: {
                 user: account.username,
-                pass: account.password,
+                pass: decrypt(account.password),
             },
             logger: false,
         });

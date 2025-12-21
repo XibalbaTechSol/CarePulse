@@ -3,6 +3,7 @@ import { SipProvider } from '@/lib/contexts/SipContext';
 import FloatingDialer from '@/components/voip/FloatingDialer';
 import { prisma } from '@/lib/db';
 import { getCurrentUser } from '@/lib/auth';
+import { decrypt } from '@/lib/encryption';
 import DashboardShell from '@/components/DashboardShell';
 
 export default async function DashboardLayout({
@@ -47,6 +48,14 @@ export default async function DashboardLayout({
     const sipConfig = await prisma.sipAccount.findUnique({
         where: { userId: user.id }
     });
+
+    if (sipConfig && sipConfig.password) {
+        try {
+            sipConfig.password = decrypt(sipConfig.password);
+        } catch (e) {
+            console.error("Failed to decrypt SIP password:", e);
+        }
+    }
 
     return (
         <SipProvider sipConfig={sipConfig}>

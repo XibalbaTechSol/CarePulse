@@ -1,0 +1,49 @@
+.audioPulse {
+    display: flex;
+    width: 24px;
+    justify-content: space-evenly;
+    align-items: center;
+    transition: all 0.5s;
+    height: 24px;
+    /* Ensure 1:1 aspect ratio or at least enough space */
+}
+
+.audioPulse>div {
+    background-color: var(--text-muted);
+    /* Using project variables */
+    border-radius: 1000px;
+    width: 4px;
+    min-height: 4px;
+    transition: height 0.1s;
+    opacity: 0.5;
+}
+
+.audioPulse.active>div {
+    background-color: var(--accent);
+    /* Using project variables */
+    opacity: 1;
+}
+
+.audioPulse.hover>div {
+    animation: audio-pulse-hover 1.4s infinite alternate ease-in-out;
+}
+
+@keyframes audio-pulse-hover {
+    from {
+        transform: translateY(0);
+    }
+
+    to {
+        transform: translateY(-3.5px);
+    }
+}
+
+@keyframes audio-pulse-pulse {
+    from {
+        scale: 1 1;
+    }
+
+    to {
+        scale: 1.2 1.2;
+    }
+}

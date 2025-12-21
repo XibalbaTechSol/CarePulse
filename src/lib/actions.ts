@@ -3,6 +3,7 @@
 import { prisma } from './db';
 import { getCurrentUser } from './auth';
 import { revalidatePath } from 'next/cache';
+import { decrypt } from './encryption';
 
 import { sendViaSRFax } from './fax';
 
@@ -34,7 +35,7 @@ export async function sendFax(formData: {
         // Real API call
         const payload: any = {
             accountId: config.accountId,
-            password: config.password,
+            password: decrypt(config.password),
             recipient: formData.recipient,
             sender: formData.sender,
             priority: formData.priority,
@@ -100,7 +101,7 @@ export async function syncFaxStatus() {
         const statusResponse = await (await import('./fax')).getFaxStatus(
             (fax as any).remoteJobId,
             config.accountId,
-            config.password
+            decrypt(config.password)
         );
 
         // Map SRFax statuses: QUEUED, IN_PROCESS, SENT (to provider), COMPLETED (delivered), FAILED

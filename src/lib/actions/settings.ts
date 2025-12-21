@@ -2,6 +2,7 @@
 
 import { prisma } from '@/lib/db';
 import { revalidatePath } from 'next/cache';
+import { encrypt } from '@/lib/encryption';
 
 export async function getModuleConfigAction(organizationId: string) {
     try {
@@ -29,11 +30,16 @@ export async function updateModuleConfigAction(id: string, data: any) {
 
 export async function saveEmailAccountAction(userId: string, data: any) {
     try {
+        const encryptedData = { ...data };
+        if (data.password) {
+            encryptedData.password = encrypt(data.password);
+        }
+
         const account = await prisma.emailAccount.upsert({
             where: { userId },
-            update: data,
+            update: encryptedData,
             create: {
-                ...data,
+                ...encryptedData,
                 userId
             }
         });
@@ -46,11 +52,16 @@ export async function saveEmailAccountAction(userId: string, data: any) {
 
 export async function saveSipAccountAction(userId: string, data: any) {
     try {
+        const encryptedData = { ...data };
+        if (data.password) {
+            encryptedData.password = encrypt(data.password);
+        }
+
         const account = await prisma.sipAccount.upsert({
             where: { userId },
-            update: data,
+            update: encryptedData,
             create: {
-                ...data,
+                ...encryptedData,
                 userId
             }
         });
@@ -62,11 +73,16 @@ export async function saveSipAccountAction(userId: string, data: any) {
 }
 export async function saveSRFaxConfigAction(userId: string, data: any) {
     try {
+        const encryptedData = { ...data };
+        if (data.password) {
+            encryptedData.password = encrypt(data.password);
+        }
+
         const config = await prisma.sRFaxConfig.upsert({
             where: { userId },
-            update: data,
+            update: encryptedData,
             create: {
-                ...data,
+                ...encryptedData,
                 userId
             }
         });
