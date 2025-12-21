@@ -1,160 +1,199 @@
 'use client';
 
 import React, { useState } from 'react';
-import { createContact } from '@/lib/actions';
-import { UserPlus, X } from 'lucide-react';
+import { createClient } from '@/lib/actions/crm';
+import { X, UserPlus, Loader2 } from 'lucide-react';
 
-export default function AddContactModal({ onClose }: { onClose: () => void }) {
-    const [loading, setLoading] = useState(false);
-    const [formData, setFormData] = useState({
-        firstName: '',
-        lastName: '',
-        email: '',
-        phone: '',
-        company: '',
-        medicaidId: '',
-        dateOfBirth: ''
-    });
+interface AddContactModalProps {
+    isOpen: boolean;
+    onClose: () => void;
+    onSuccess?: () => void;
+}
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
-    };
+export default function AddContactModal({ isOpen, onClose, onSuccess }: AddContactModalProps) {
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setLoading(true);
+    // If not open, don't render anything
+    if (!isOpen) return null;
+
+    const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+        setIsLoading(true);
+        setError(null);
+
+        const formData = new FormData(event.currentTarget);
+
         try {
-            await createContact(formData);
-            onClose();
-        } catch (error) {
-            console.error('Failed to create contact:', error);
-            alert('Failed to create contact');
+            const result = await createClient(formData);
+
+            if (result.error) {
+                setError(result.error);
+            } else {
+                if (onSuccess) onSuccess();
+                onClose();
+            }
+        } catch (err) {
+            setError('An unexpected error occurred.');
+            console.error(err);
         } finally {
-            setLoading(false);
+            setIsLoading(false);
         }
     };
 
     return (
         <div style={{
-            position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-            backgroundColor: 'rgba(0, 0, 0, 0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center',
-            zIndex: 50, backdropFilter: 'blur(4px)'
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1000,
+            backdropFilter: 'blur(4px)'
         }}>
-            <div className="glass" style={{ width: '100%', maxWidth: '500px', padding: '2rem', position: 'relative' }}>
-                <button
-                    onClick={onClose}
-                    style={{ position: 'absolute', top: '1rem', right: '1rem', background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}
-                >
-                    <X size={20} />
-                </button>
-
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem' }}>
-                    <div style={{ padding: '0.75rem', borderRadius: '12px', background: 'rgba(6, 182, 212, 0.1)', color: 'var(--accent)' }}>
-                        <UserPlus size={24} />
+            <div className="glass" style={{
+                width: '100%',
+                maxWidth: '500px',
+                padding: '2rem',
+                borderRadius: '16px',
+                border: '1px solid var(--glass-border)',
+                background: 'var(--glass-background)',
+                boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.37)'
+            }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                        <div style={{
+                            background: 'rgba(var(--primary-rgb), 0.1)',
+                            padding: '0.5rem',
+                            borderRadius: '8px',
+                            color: 'var(--primary)'
+                        }}>
+                            <UserPlus size={24} />
+                        </div>
+                        <h2 style={{ fontSize: '1.25rem', fontWeight: '600', margin: 0, color: 'var(--text-main)' }}>Add New Contact</h2>
                     </div>
-                    <h2 style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>Add New Contact</h2>
+                    <button
+                        onClick={onClose}
+                        style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}
+                    >
+                        <X size={24} />
+                    </button>
                 </div>
+
+                {error && (
+                    <div style={{
+                        padding: '0.75rem',
+                        marginBottom: '1rem',
+                        borderRadius: '8px',
+                        background: 'rgba(220, 38, 38, 0.1)',
+                        border: '1px solid rgba(220, 38, 38, 0.2)',
+                        color: '#ef4444',
+                        fontSize: '0.9rem'
+                    }}>
+                        {error}
+                    </div>
+                )}
 
                 <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                         <div>
-                            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>First Name</label>
+                            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: 'var(--text-muted)' }}>First Name</label>
                             <input
-                                required
+                                type="text"
                                 name="firstName"
-                                value={formData.firstName}
-                                onChange={handleChange}
-                                className="input-glass"
-                                style={{ width: '100%', padding: '0.75rem', borderRadius: '8px' }}
+                                required
+                                className="glass-input"
+                                placeholder="Jane"
+                                style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'rgba(255, 255, 255, 0.05)', color: 'var(--text-main)', outline: 'none' }}
                             />
                         </div>
                         <div>
-                            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>Last Name</label>
+                            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: 'var(--text-muted)' }}>Last Name</label>
                             <input
-                                required
+                                type="text"
                                 name="lastName"
-                                value={formData.lastName}
-                                onChange={handleChange}
-                                className="input-glass"
-                                style={{ width: '100%', padding: '0.75rem', borderRadius: '8px' }}
+                                required
+                                className="glass-input"
+                                placeholder="Doe"
+                                style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'rgba(255, 255, 255, 0.05)', color: 'var(--text-main)', outline: 'none' }}
                             />
                         </div>
                     </div>
 
                     <div>
-                        <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>Email</label>
+                        <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: 'var(--text-muted)' }}>Email</label>
                         <input
-                            required
                             type="email"
                             name="email"
-                            value={formData.email}
-                            onChange={handleChange}
-                            className="input-glass"
-                            style={{ width: '100%', padding: '0.75rem', borderRadius: '8px' }}
+                            className="glass-input"
+                            placeholder="jane@example.com"
+                            style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'rgba(255, 255, 255, 0.05)', color: 'var(--text-main)', outline: 'none' }}
                         />
                     </div>
 
                     <div>
-                        <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>Phone</label>
+                        <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: 'var(--text-muted)' }}>Phone Number</label>
                         <input
                             type="tel"
                             name="phone"
-                            value={formData.phone}
-                            onChange={handleChange}
-                            className="input-glass"
-                            style={{ width: '100%', padding: '0.75rem', borderRadius: '8px' }}
+                            className="glass-input"
+                            placeholder="+1 (555) 000-0000"
+                            style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'rgba(255, 255, 255, 0.05)', color: 'var(--text-main)', outline: 'none' }}
                         />
-                    </div>
-
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                        <div>
-                            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>Company</label>
-                            <input
-                                name="company"
-                                value={formData.company}
-                                onChange={handleChange}
-                                className="input-glass"
-                                style={{ width: '100%', padding: '0.75rem', borderRadius: '8px' }}
-                            />
-                        </div>
-                        <div>
-                            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>Medicaid ID</label>
-                            <input
-                                name="medicaidId"
-                                value={formData.medicaidId}
-                                onChange={handleChange}
-                                className="input-glass"
-                                style={{ width: '100%', padding: '0.75rem', borderRadius: '8px' }}
-                            />
-                        </div>
                     </div>
 
                     <div>
-                        <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>Date of Birth</label>
+                        <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: 'var(--text-muted)' }}>Date of Birth</label>
                         <input
                             type="date"
                             name="dateOfBirth"
-                            value={formData.dateOfBirth}
-                            onChange={handleChange}
-                            className="input-glass"
-                            style={{ width: '100%', padding: '0.75rem', borderRadius: '8px' }}
+                            className="glass-input"
+                            style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'rgba(255, 255, 255, 0.05)', color: 'var(--text-main)', outline: 'none' }}
                         />
                     </div>
+
+                    <div>
+                        <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: 'var(--text-muted)' }}>Medicaid ID</label>
+                        <input
+                            type="text"
+                            name="medicaidId"
+                            className="glass-input"
+                            placeholder="Optional"
+                            style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'rgba(255, 255, 255, 0.05)', color: 'var(--text-main)', outline: 'none' }}
+                        />
+                    </div>
+
 
                     <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '1rem', marginTop: '1rem' }}>
                         <button
                             type="button"
                             onClick={onClose}
-                            style={{ padding: '0.75rem 1.5rem', background: 'transparent', border: '1px solid var(--glass-border)', borderRadius: '8px', color: 'var(--text-foreground)', cursor: 'pointer' }}
+                            style={{ padding: '0.75rem 1.5rem', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'transparent', color: 'var(--text-main)', cursor: 'pointer' }}
                         >
                             Cancel
                         </button>
                         <button
                             type="submit"
-                            disabled={loading}
-                            className="btn-primary"
+                            disabled={isLoading}
+                            style={{
+                                padding: '0.75rem 1.5rem',
+                                borderRadius: '8px',
+                                border: 'none',
+                                background: 'var(--primary)',
+                                color: 'white',
+                                cursor: isLoading ? 'not-allowed' : 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '0.5rem',
+                                fontWeight: '600'
+                            }}
                         >
-                            {loading ? 'Creating...' : 'Create Contact'}
+                            {isLoading && <Loader2 size={16} className="animate-spin" />}
+                            {isLoading ? 'Saving...' : 'Save Contact'}
                         </button>
                     </div>
                 </form>

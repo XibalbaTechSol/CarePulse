@@ -1,6 +1,6 @@
 'use server';
 
-import { prisma } from '@/lib/db';
+import { sql } from '@/lib/db-sql';
 import { getCurrentUser } from '@/lib/auth';
 import { revalidatePath } from 'next/cache';
 
@@ -20,26 +20,20 @@ export async function createClient(formData: FormData) {
     const state = formData.get('state') as string;
     const zip = formData.get('zip') as string;
     const medicaidId = formData.get('medicaidId') as string;
-    const dateOfBirth = formData.get('dateOfBirth') ? new Date(formData.get('dateOfBirth') as string) : null;
+    const dobString = formData.get('dateOfBirth') as string;
 
     try {
-        await prisma.contact.create({
-            data: {
-                firstName,
-                lastName,
-                email,
-                phone,
-                address,
-                city,
-                state,
-                zip,
-                medicaidId,
-                dateOfBirth,
-                status: 'CUSTOMER',
-                organizationId: currentUser.organizationId,
-                userId: currentUser.id // Created by this user
-            }
-        });
+        const id = sql.id();
+        const now = sql.now();
+        sql.run(`
+            INSERT INTO Contact (
+                id, firstName, lastName, email, phone, address, city, state, zip, medicaidId, dateOfBirth, 
+                status, organizationId, userId, createdAt, updatedAt
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `, [
+            id, firstName, lastName, email, phone, address, city, state, zip, medicaidId, dobString ? new Date(dobString).toISOString() : null,
+            'CUSTOMER', currentUser.organizationId, currentUser.id, now, now
+        ]);
         revalidatePath('/dashboard/crm');
         return { success: true };
     } catch (error) {
@@ -52,33 +46,34 @@ export async function getClients() {
     const currentUser = await getCurrentUser();
     if (!currentUser.organizationId) return [];
 
-    return await prisma.contact.findMany({
-        where: {
-            organizationId: currentUser.organizationId,
-            status: { in: ['CUSTOMER', 'LEAD'] }
-        },
-        orderBy: { updatedAt: 'desc' }
-    });
+    return sql.all<any>(`
+        SELECT * FROM Contact 
+        WHERE organizationId = ? 
+        AND status IN ('CUSTOMER', 'LEAD') 
+        ORDER BY updatedAt DESC
+    `, [currentUser.organizationId]);
 }
 
 export async function getClient(id: string) {
     const currentUser = await getCurrentUser();
     if (!currentUser.organizationId) return null;
 
-    return await prisma.contact.findFirst({
-        where: {
-            id,
-            organizationId: currentUser.organizationId
-        },
-        include: {
-            carePlans: {
-                include: {
-                    tasks: true
-                }
-            },
-            documents: true
+    const client = sql.get<any>(`
+        SELECT * FROM Contact 
+        WHERE id = ? AND organizationId = ?
+    `, [id, currentUser.organizationId]);
+
+    if (client) {
+        // Hydrate care plans
+        const carePlans = sql.all<any>(`SELECT * FROM CarePlan WHERE contactId = ?`, [client.id]);
+        for (const plan of carePlans) {
+            plan.tasks = sql.all(`SELECT * FROM CarePlanTask WHERE carePlanId = ?`, [plan.id]);
         }
-    });
+        client.carePlans = carePlans;
+        client.documents = sql.all(`SELECT * FROM Document WHERE contactId = ?`, [client.id]);
+    }
+
+    return client;
 }
 
 export async function createCarePlanTask(carePlanId: string, formData: FormData) {
@@ -88,15 +83,14 @@ export async function createCarePlanTask(carePlanId: string, formData: FormData)
     const category = formData.get('category') as string;
 
     try {
-        await prisma.carePlanTask.create({
-            data: {
-                carePlanId,
-                taskName,
-                frequency,
-                category
-            }
-        });
-        const plan = await prisma.carePlan.findUnique({ where: { id: carePlanId } });
+        const id = sql.id();
+        const now = sql.now();
+        sql.run(`
+            INSERT INTO CarePlanTask (id, carePlanId, taskName, frequency, category, createdAt, updatedAt)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        `, [id, carePlanId, taskName, frequency, category, now, now]);
+
+        const plan = sql.get<any>(`SELECT contactId FROM CarePlan WHERE id = ?`, [carePlanId]);
         if (plan) {
             revalidatePath(`/dashboard/crm/${plan.contactId}`);
         }
@@ -113,21 +107,28 @@ export async function ensureCarePlan(contactId: string) {
     const currentUser = await getCurrentUser();
     if (!currentUser.organizationId) return null;
 
-    let plan = await prisma.carePlan.findFirst({
-        where: { contactId, status: 'ACTIVE' },
-        include: { tasks: true }
-    });
+    let plan = sql.get<any>(`
+        SELECT * FROM CarePlan 
+        WHERE contactId = ? 
+        AND status = 'ACTIVE'
+        LIMIT 1
+    `, [contactId]);
 
     if (!plan) {
-        plan = await prisma.carePlan.create({
-            data: {
-                contactId,
-                organizationId: currentUser.organizationId,
-                title: 'General Care Plan'
-            },
-            include: { tasks: true }
-        });
+        const id = sql.id();
+        const now = sql.now();
+        sql.run(`
+            INSERT INTO CarePlan (id, contactId, organizationId, title, status, createdAt, updatedAt)
+            VALUES (?, ?, ?, ?, 'ACTIVE', ?, ?)
+        `, [id, contactId, currentUser.organizationId, 'General Care Plan', now, now]);
+
+        plan = sql.get<any>(`SELECT * FROM CarePlan WHERE id = ?`, [id]);
     }
+
+    if (plan) {
+        plan.tasks = sql.all(`SELECT * FROM CarePlanTask WHERE carePlanId = ?`, [plan.id]);
+    }
+
     return plan;
 }
 
@@ -139,51 +140,58 @@ export async function saveCarePlan(contactId: string, title: string, tasks: { ta
 
     try {
         // Find existing active plan to update or create new
-        const existingPlan = await prisma.carePlan.findFirst({
-            where: { contactId, status: 'ACTIVE' }
-        });
+        let existingPlan = sql.get<any>(`
+            SELECT id FROM CarePlan 
+            WHERE contactId = ? AND status = 'ACTIVE'
+            LIMIT 1
+        `, [contactId]);
+
+        const now = sql.now();
 
         if (existingPlan) {
             // Update existing plan
-            await prisma.carePlan.update({
-                where: { id: existingPlan.id },
-                data: { title }
-            });
+            sql.run(`UPDATE CarePlan SET title = ?, updatedAt = ? WHERE id = ?`, [title, now, existingPlan.id]);
 
             // Replace tasks (delete all and create new for simplicity in this builder)
-            await prisma.visitTask.deleteMany({
-                where: {
-                    task: { carePlanId: existingPlan.id }
-                }
-            });
-            await prisma.carePlanTask.deleteMany({
-                where: { carePlanId: existingPlan.id }
-            });
+            // First delete relations from VisitTask if any (assuming cascade or we can ignore constraints for this simplified logic? 
+            // Better-sqlite3 foreign key constraints are on, so we must be careful.
+            // Wait, VisitTask links to CarePlanTask. If we delete CarePlanTask, we need to handle Visits.
+            // The original logic did:
+            // await prisma.visitTask.deleteMany({ where: { task: { carePlanId: existingPlan.id } } });
+            // await prisma.carePlanTask.deleteMany({ where: { carePlanId: existingPlan.id } });
 
-            await prisma.carePlanTask.createMany({
-                data: tasks.map(t => ({
-                    carePlanId: existingPlan.id,
-                    taskName: t.taskName,
-                    category: t.category,
-                    frequency: 'EVERY_VISIT' // Default
-                }))
-            });
+            // Delete VisitTasks linked to tasks of this plan
+            sql.run(`
+                DELETE FROM VisitTask 
+                WHERE taskId IN (SELECT id FROM CarePlanTask WHERE carePlanId = ?)
+            `, [existingPlan.id]);
+
+            // Delete CarePlanTasks
+            sql.run(`DELETE FROM CarePlanTask WHERE carePlanId = ?`, [existingPlan.id]);
+
+            // Create new tasks
+            for (const t of tasks) {
+                const id = sql.id();
+                sql.run(`
+                    INSERT INTO CarePlanTask (id, carePlanId, taskName, category, frequency, createdAt, updatedAt)
+                    VALUES (?, ?, ?, ?, 'EVERY_VISIT', ?, ?)
+                `, [id, existingPlan.id, t.taskName, t.category, now, now]);
+            }
         } else {
             // Create new plan
-            await prisma.carePlan.create({
-                data: {
-                    contactId,
-                    organizationId: currentUser.organizationId,
-                    title,
-                    tasks: {
-                        create: tasks.map(t => ({
-                            taskName: t.taskName,
-                            category: t.category,
-                            frequency: 'EVERY_VISIT'
-                        }))
-                    }
-                }
-            });
+            const planId = sql.id();
+            sql.run(`
+                INSERT INTO CarePlan (id, contactId, organizationId, title, status, createdAt, updatedAt)
+                VALUES (?, ?, ?, ?, 'ACTIVE', ?, ?)
+            `, [planId, contactId, currentUser.organizationId, title, now, now]);
+
+            for (const t of tasks) {
+                const id = sql.id();
+                sql.run(`
+                    INSERT INTO CarePlanTask (id, carePlanId, taskName, category, frequency, createdAt, updatedAt)
+                    VALUES (?, ?, ?, ?, 'EVERY_VISIT', ?, ?)
+                `, [id, planId, t.taskName, t.category, now, now]);
+            }
         }
 
         revalidatePath(`/dashboard/crm/${contactId}`);
@@ -203,19 +211,18 @@ export async function exportLeadsAction() {
     }
 
     try {
-        const leads = await prisma.contact.findMany({
-            where: {
-                organizationId: currentUser.organizationId,
-                status: 'LEAD'
-            }
-        });
+        const leads = sql.all<any>(`
+            SELECT * FROM Contact 
+            WHERE organizationId = ? 
+            AND status = 'LEAD'
+        `, [currentUser.organizationId]);
 
         // CSV Header
         const header = 'First Name,Last Name,Email,Phone,Company,Status,Created At\n';
 
         // CSV Rows
         const rows = leads.map(lead => {
-            return `${lead.firstName},${lead.lastName},${lead.email || ''},${lead.phone || ''},${lead.company || ''},${lead.status},${lead.createdAt.toISOString()}`;
+            return `${lead.firstName},${lead.lastName},${lead.email || ''},${lead.phone || ''},${lead.company || ''},${lead.status},${new Date(lead.createdAt).toISOString()}`;
         }).join('\n');
 
         return { data: header + rows };

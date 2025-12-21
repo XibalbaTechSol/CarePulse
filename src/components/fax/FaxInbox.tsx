@@ -2,36 +2,37 @@
 
 import React, { useEffect, useState } from 'react';
 import { getFaxes } from '@/lib/actions';
-import { FileText, Download, Trash2, Clock, RefreshCw, Eye } from 'lucide-react';
-import FileViewer from '../FileViewer';
+import { FileText, Clock, ArrowDownLeft, ArrowUpRight } from 'lucide-react';
 
 interface Fax {
     id: string;
     recipient: string;
+    sender: string;
     direction: string;
     status: string;
+    isRead?: boolean;
     createdAt: Date;
+    remoteJobId?: string;
 }
 
-export default function FaxInbox() {
+interface FaxInboxProps {
+    filter?: 'inbox' | 'sent' | 'queued';
+    selectedId?: string | null;
+    onSelect?: (id: string) => void;
+}
+
+export default function FaxInbox({ filter = 'inbox', selectedId, onSelect }: FaxInboxProps) {
     const [faxes, setFaxes] = useState<Fax[]>([]);
     const [loading, setLoading] = useState(true);
-    const [refreshing, setRefreshing] = useState(false);
-
-    // Viewer State
-    const [viewerOpen, setViewerOpen] = useState(false);
-    const [viewFileUrl, setViewFileUrl] = useState<string | null>(null);
-    const [viewFileName, setViewFileName] = useState<string | undefined>(undefined);
 
     const loadFaxes = async () => {
         try {
             const data = await getFaxes();
-            setFaxes(data);
+            setFaxes(data as unknown as Fax[]);
         } catch (error) {
             console.error('Failed to load faxes:', error);
         } finally {
             setLoading(false);
-            setRefreshing(false);
         }
     };
 
@@ -39,126 +40,109 @@ export default function FaxInbox() {
         loadFaxes();
     }, []);
 
-    const handleRefresh = async () => {
-        setRefreshing(true);
-        // Call syncFaxStatus first to update statuses from provider
-        // We need to dyn import or pass it as prop if we want to keep this client component clean, 
-        // but for now we'll assumes it's available via actions. 
-        // Note: We need to import syncFaxStatus from actions
-        try {
-            const { syncFaxStatus } = await import('@/lib/actions');
-            await syncFaxStatus();
-        } catch (e) {
-            console.error("Sync failed", e);
-        }
-        await loadFaxes();
+    const filteredFaxes = faxes.filter(fax => {
+        if (filter === 'inbox') return fax.direction === 'INBOUND';
+        if (filter === 'sent') return fax.direction === 'OUTBOUND' && fax.status === 'DELIVERED';
+        if (filter === 'queued') return fax.direction === 'OUTBOUND' && ['QUEUED', 'IN_PROCESS', 'SENT'].includes(fax.status);
+        return true;
+    });
+
+    if (loading) return <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.85rem' }}>Loading...</div>;
+
+    const getHeader = () => {
+        if (filter === 'inbox') return 'Received Faxes';
+        if (filter === 'sent') return 'Sent Faxes';
+        return 'Fax Queue';
     };
 
-    if (loading) return <div className="glass" style={{ padding: '2rem' }}>Loading faxes...</div>;
-
     return (
-        <div className="glass" style={{ padding: '0' }}>
-            <div style={{ padding: '1.5rem', borderBottom: '1px solid var(--glass-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                    <h2 style={{ fontSize: '1.25rem' }}>Fax History</h2>
-                    <button
-                        onClick={handleRefresh}
-                        disabled={refreshing}
-                        className="glass-hover"
-                        style={{
-                            background: 'transparent',
-                            border: 'none',
-                            cursor: 'pointer',
-                            padding: '4px',
-                            display: 'flex',
-                            alignItems: 'center'
-                        }}
-                        title="Refresh Status"
-                    >
-                        <RefreshCw size={16} className={refreshing ? "animate-spin" : ""} />
-                    </button>
-                </div>
-                <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{faxes.length} Total</span>
-            </div>
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
+            {/* Header always visible */}
+            <h2 style={{ fontSize: '0.9rem', color: 'var(--text-muted)', padding: '1rem 1.25rem 0.5rem', margin: 0, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                {getHeader()}
+            </h2>
 
-            {faxes.length === 0 ? (
-                <div style={{ padding: '4rem', textAlign: 'center', color: 'var(--text-muted)' }}>
-                    <FileText size={48} style={{ marginBottom: '1rem', opacity: 0.2 }} />
-                    <p>No faxes found in your history.</p>
+            {filteredFaxes.length === 0 ? (
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '3rem', color: 'var(--text-muted)' }}>
+                    <FileText size={32} style={{ marginBottom: '1rem', opacity: 0.1 }} />
+                    <p style={{ margin: 0, fontSize: '0.85rem' }}>No documents found.</p>
                 </div>
             ) : (
-                <div style={{ overflowX: 'auto' }}>
-                    <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                        <thead>
-                            <tr style={{ textAlign: 'left', borderBottom: '1px solid var(--glass-border)' }}>
-                                <th style={{ padding: '1rem', fontSize: '0.85rem', color: 'var(--text-muted)' }}>Date</th>
-                                <th style={{ padding: '1rem', fontSize: '0.85rem', color: 'var(--text-muted)' }}>Recipient</th>
-                                <th style={{ padding: '1rem', fontSize: '0.85rem', color: 'var(--text-muted)' }}>Status</th>
-                                <th style={{ padding: '1rem', fontSize: '0.85rem', color: 'var(--text-muted)' }}>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {faxes.map((fax) => (
-                                <tr key={fax.id} className="glass-hover" style={{ borderBottom: '1px solid var(--glass-border)' }}>
-                                    <td style={{ padding: '1rem', fontSize: '0.9rem' }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                            <Clock size={14} className="text-muted" />
-                                            {new Date(fax.createdAt).toLocaleDateString()}
-                                        </div>
-                                    </td>
-                                    <td style={{ padding: '1rem', fontSize: '0.9rem' }}>{fax.recipient}</td>
-                                    <td style={{ padding: '1rem' }}>
-                                        <span style={{
-                                            fontSize: '0.75rem',
-                                            padding: '4px 8px',
-                                            borderRadius: '12px',
-                                            background: fax.status === 'DELIVERED' ? 'rgba(34,197,94,0.1)' :
-                                                fax.status === 'FAILED' ? 'rgba(239,68,68,0.1)' : 'rgba(234,179,8,0.1)',
-                                            color: fax.status === 'DELIVERED' ? 'var(--success)' :
-                                                fax.status === 'FAILED' ? 'var(--error)' : 'var(--accent)'
-                                        }}>
-                                            {fax.status}
-                                        </span>
-                                    </td>
-                                    <td style={{ padding: '1rem' }}>
-                                        <div style={{ display: 'flex', gap: '0.5rem' }}>
-                                            <button
-                                                className="glass-hover"
-                                                style={{ padding: '4px', borderRadius: '4px', border: 'none', background: 'transparent' }}
-                                                onClick={() => {
-                                                    // Mock viewing logic - in real app, fetch signed URL
-                                                    // For demo purposes, we will just open a placeholder PDF or similar
-                                                    // In production, we would get this URL from the fax object
-                                                    setViewFileUrl('https://mozilla.github.io/pdf.js/web/compressed.tracemonkey-pldi-09.pdf'); // Mock PDF
-                                                    setViewFileName(`Fax-${fax.id}.pdf`);
-                                                    setViewerOpen(true);
-                                                }}
-                                                title="View Fax"
-                                            >
-                                                <Eye size={16} />
-                                            </button>
-                                            <button className="glass-hover" style={{ padding: '4px', borderRadius: '4px', border: 'none', background: 'transparent' }}>
-                                                <Download size={16} />
-                                            </button>
-                                            <button className="glass-hover" style={{ padding: '4px', borderRadius: '4px', border: 'none', background: 'transparent', color: 'var(--error)' }}>
-                                                <Trash2 size={16} />
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-            )}
+                filteredFaxes.map((fax) => (
+                    <div
+                        key={fax.id}
+                        onClick={() => onSelect?.(fax.id)}
+                        className="glass-hover"
+                        style={{
+                            padding: '1rem 1.25rem',
+                            borderBottom: '1px solid var(--glass-border)',
+                            cursor: 'pointer',
+                            background: selectedId === fax.id ? 'rgba(var(--primary-rgb), 0.08)' : 'transparent',
+                            transition: 'all 0.2s ease',
+                            display: 'flex',
+                            gap: '1rem',
+                            alignItems: 'flex-start'
+                        }}
+                    >
+                        <div style={{
+                            width: '36px',
+                            height: '36px',
+                            borderRadius: '8px',
+                            background: fax.isRead ? 'rgba(255,255,255,0.03)' : 'rgba(var(--primary-rgb), 0.1)',
+                            color: fax.isRead ? 'var(--text-muted)' : 'var(--primary)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            flexShrink: 0
+                        }}>
+                            {filter === 'inbox' ? <ArrowDownLeft size={18} /> : filter === 'sent' ? <ArrowUpRight size={18} /> : <Clock size={18} />}
+                        </div>
 
-            <FileViewer
-                isOpen={viewerOpen}
-                onClose={() => setViewerOpen(false)}
-                fileUrl={viewFileUrl}
-                fileName={viewFileName}
-                fileType="application/pdf"
-            />
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                alignItems: 'baseline',
+                                marginBottom: '2px'
+                            }}>
+                                <span style={{
+                                    fontSize: '0.9rem',
+                                    fontWeight: fax.isRead ? '500' : '700',
+                                    color: fax.isRead ? 'var(--text-main)' : 'white',
+                                    overflow: 'hidden',
+                                    textOverflow: 'ellipsis',
+                                    whiteSpace: 'nowrap'
+                                }}>
+                                    {filter === 'inbox' ? fax.sender : fax.recipient}
+                                </span>
+                                <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', flexShrink: 0 }}>
+                                    {new Date(fax.createdAt).toLocaleDateString([], { month: 'short', day: 'numeric' })}
+                                </span>
+                            </div>
+
+                            <div style={{
+                                fontSize: '0.75rem',
+                                color: 'var(--text-muted)',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                whiteSpace: 'nowrap'
+                            }}>
+                                ID: {fax.remoteJobId || fax.id.substring(0, 8)} • {fax.status}
+                            </div>
+                        </div>
+
+                        {!fax.isRead && (
+                            <div style={{
+                                width: '8px',
+                                height: '8px',
+                                borderRadius: '50%',
+                                background: 'var(--primary)',
+                                marginTop: '6px'
+                            }} />
+                        )}
+                    </div>
+                ))
+            )}
         </div>
     );
 }

@@ -1,7 +1,5 @@
 export const FORM_MAPPINGS: Record<string, Record<string, string>> = {
-    // Mapping for standard Wisconsin forms (e.g., F-62274A)
-    // Keys are the potential PDF field names (lowercase partial match).
-    // Values are the data paths.
+    // Default fallback
     'default': {
         'member name': 'contact.name',
         'applicant': 'contact.name',
@@ -9,19 +7,33 @@ export const FORM_MAPPINGS: Record<string, Record<string, string>> = {
         'client': 'contact.name',
         'ma id': 'contact.medicaidId',
         'medicaid id': 'contact.medicaidId',
-        'prime number': 'contact.medicaidId', // WI term
+        'prime number': 'contact.medicaidId', 
         'dob': 'contact.dob',
-        'birth': 'contact.dob',
-        'address': 'contact.address',
-        'street': 'contact.address',
-        'city': 'contact.city',
-        'state': 'contact.state',
-        'zip': 'contact.zip',
+        'address': 'contact.complete_address', // Prefer complete
         'phone': 'contact.phone',
-        'telephone': 'contact.phone',
         'provider name': 'organization.name',
-        'agency': 'organization.name',
-        'provider number': 'organization.npi',
         'npi': 'organization.npi'
+    },
+    'CMS-485-P': {
+        'claimNumber': 'contact.medicaidId',
+        'mrn': 'contact.id', // Or specific MRN field if added
+        'patientName': 'contact.name',
+        'patientAddress': 'contact.complete_address',
+        'providerInfo': 'organization.name', // Should append address if available
+        'socDate': 'contact.admissionDate', // Derived in action if needed
+        'dob': 'contact.dob',
+        'icdCodes': 'clinical.diagnosis', // Derived
+        'goals': 'carePlan.goals', // Derived
+        'orders': 'carePlan.tasks' // Derived
+    },
+    'WI-F-62274A': {
+        'billingProviderName': 'organization.name',
+        'billingProviderNPI': 'organization.npi',
+        'memberID': 'contact.medicaidId',
+        'memberName': 'contact.name',
+        'serviceCode_1': 'auth.serviceCode', // Default to T1019 in action
+        'modifier_1': 'auth.modifier',
+        'quantity_1': 'auth.units',
+        'primaryDiagnosis': 'clinical.diagnosis'
     }
 };

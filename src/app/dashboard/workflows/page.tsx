@@ -1,4 +1,6 @@
 "use client";
+'use client';
+
 import React, { useState, ReactNode } from 'react';
 
 type TabType = 'intake' | 'auth' | 'onboarding';

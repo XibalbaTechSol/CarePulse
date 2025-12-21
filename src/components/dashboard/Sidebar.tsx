@@ -14,15 +14,13 @@ import {
     Wallet,
     Workflow,
     FileText,
-    Brain,
-    ChevronRight,
-    ChevronLeft
+    Brain
 } from 'lucide-react';
 import { ThemeToggle } from '../theme/ThemeToggle';
 
 export default function Sidebar() {
     const pathname = usePathname();
-    const [collapsed, setCollapsed] = React.useState(false);
+    const collapsed = false; // Sidebar always expanded
 
     const navItems = [
         { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
@@ -41,7 +39,8 @@ export default function Sidebar() {
         { name: 'AI Insights', href: '/dashboard/ai', icon: Brain },
     ];
 
-    const NavLink = ({ item }: { item: any }) => {
+    type NavItem = { name: string; href: string; icon: any };
+    const NavLink = ({ item }: { item: NavItem }) => {
         const isActive = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href));
         return (
             <Link
@@ -60,26 +59,19 @@ export default function Sidebar() {
 
     return (
         <aside
-            className={`flex-shrink-0 flex flex-col bg-surface border-r border-border h-full transition-all duration-300 ${collapsed ? 'w-20' : 'w-64'
-                }`}
+            className="flex-shrink-0 flex flex-col bg-surface border-r border-border h-full w-64"
         >
             <div className="p-4 border-b border-border flex items-center justify-between">
-                <div className={`flex items-center gap-3 ${collapsed ? 'justify-center w-full' : ''}`}>
+                <div className="flex items-center gap-3">
                     <div className="size-8 relative flex items-center justify-center shrink-0">
                         <Image src="/logo.svg" alt="CarePulse Logo" fill className="object-contain" />
                     </div>
-                    {!collapsed && (
-                        <div className="flex flex-col">
-                            <h1 className="text-text-primary text-sm font-bold leading-normal">CarePulse</h1>
-                            <p className="text-text-secondary text-[10px] font-normal leading-normal">Agency Console</p>
-                        </div>
-                    )}
+                    <div className="flex flex-col">
+                        <h1 className="text-text-primary text-sm font-bold leading-normal">CarePulse</h1>
+                        <p className="text-text-secondary text-[10px] font-normal leading-normal">Agency Console</p>
+                    </div>
                 </div>
-                {!collapsed && (
-                    <button onClick={() => setCollapsed(!collapsed)} className="text-text-secondary hover:text-text-primary">
-                        <ChevronLeft size={16} />
-                    </button>
-                )}
+                {/* Collapse button removed to keep sidebar always visible */}
             </div>
 
             <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-1">
@@ -87,17 +79,12 @@ export default function Sidebar() {
                     <NavLink key={item.name} item={item} />
                 ))}
 
-                {!collapsed && (
-                    <div className="pt-4 mt-2 border-t border-border">
-                        <p className="px-3 text-xs font-semibold text-text-tertiary uppercase tracking-wider mb-2">Intelligence</p>
-                        {intelligenceItems.map((item) => (
-                            <NavLink key={item.name} item={item} />
-                        ))}
-                    </div>
-                )}
-                {collapsed && intelligenceItems.map((item) => (
-                    <NavLink key={item.name} item={item} />
-                ))}
+                <div className="pt-4 mt-2 border-t border-border">
+                    <p className="px-3 text-xs font-semibold text-text-tertiary uppercase tracking-wider mb-2">Intelligence</p>
+                    {intelligenceItems.map((item) => (
+                        <NavLink key={item.name} item={item} />
+                    ))}
+                </div>
             </div>
 
             <div className={`p-4 border-t border-border flex items-center gap-3 ${collapsed ? 'flex-col' : 'justify-between'}`}>
@@ -120,11 +107,7 @@ export default function Sidebar() {
                     )}
                 </div>
             </div>
-            {collapsed && (
-                <button onClick={() => setCollapsed(false)} className="mx-auto mb-4 text-text-secondary hover:text-text-primary">
-                    <ChevronRight size={16} />
-                </button>
-            )}
+            {/* Expand button removed as sidebar is always expanded */}
         </aside>
     );
 }

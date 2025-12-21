@@ -1,7 +1,12 @@
 'use client';
 
 import React from 'react';
-import ChatInterface from '@/components/ai/ChatInterface';
+import dynamic from 'next/dynamic';
+
+const ChatInterface = dynamic(() => import('@/components/ai/ChatInterface'), {
+    ssr: false,
+    loading: () => <div className="h-full w-full flex items-center justify-center text-white/50">Initializing AI...</div>
+});
 
 export default function AIDashboard() {
     return (

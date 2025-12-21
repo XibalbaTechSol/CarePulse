@@ -1,6 +1,6 @@
 'use server';
 
-import { prisma } from '@/lib/db';
+import { sql } from '@/lib/db-sql';
 import { getCurrentUser } from '@/lib/auth';
 import { revalidatePath } from 'next/cache';
 
@@ -28,9 +28,21 @@ async function pushToSandata(visit: any, config: any) {
 
     // Mocking the interaction
     console.log(`[Sandata Sync] Pushing Visit ${visit.id} to Agency ${config.agencyId}`);
+
+    // In SQL version, relations (client/caregiver) might not be hydrated unless we passed them.
+    // If we need them here, we should fetch/ensure they exist.
+    // Assuming 'visit' passed here is fully hydrated or we fetch it.
+
+    // For simplicity, fetch if missing
+    let client = visit.client;
+    let caregiver = visit.caregiver;
+
+    if (!client) client = sql.get(`SELECT * FROM Contact WHERE id = ?`, [visit.clientId]);
+    if (!caregiver) caregiver = sql.get(`SELECT * FROM User WHERE id = ?`, [visit.caregiverId]);
+
     console.log(`[Sandata Sync] Data:`, {
-        StaffID: visit.caregiver.nationalProviderId || visit.caregiver.providerSSN || visit.caregiver.id,
-        PatientID: visit.client.medicaidId || visit.clientId,
+        StaffID: caregiver?.nationalProviderId || caregiver?.providerSSN || caregiver?.id,
+        PatientID: client?.medicaidId || visit.clientId,
         VisitStartParams: {
             Date: visit.startDateTime,
             Latitude: visit.startLatitude,
@@ -41,7 +53,7 @@ async function pushToSandata(visit: any, config: any) {
             Latitude: visit.endLatitude,
             Longitude: visit.endLongitude
         },
-        Units: visit.startDateTime && visit.endDateTime ? await calculateWisconsinUnits(visit.startDateTime, visit.endDateTime) : 0
+        Units: visit.startDateTime && visit.endDateTime ? await calculateWisconsinUnits(new Date(visit.startDateTime), new Date(visit.endDateTime)) : 0
     });
 
     // Simulate network delay and response
@@ -61,35 +73,32 @@ export async function getDashboardStats() {
     if (!user || !user.organizationId) throw new Error('Unauthorized');
 
     const now = new Date();
-    const oneHourAgo = new Date(now.getTime() - (60 * 60 * 1000));
+    const oneHourAgo = new Date(now.getTime() - (60 * 60 * 1000)).toISOString();
 
     // 1. Missed Visits (SCHEDULED and startDateTime < oneHourAgo)
-    const missedVisits = await prisma.visit.count({
-        where: {
-            organizationId: user.organizationId,
-            status: 'SCHEDULED',
-            startDateTime: { lt: oneHourAgo }
-        }
-    });
+    const missedVisits = sql.get<any>(`
+        SELECT COUNT(*) as count FROM Visit 
+        WHERE organizationId = ? 
+        AND status = 'SCHEDULED' 
+        AND startDateTime < ?
+    `, [user.organizationId, oneHourAgo])?.count || 0;
 
     // 2. Expiring Authorizations (Ends within 14 days)
-    const fourteenDaysFromNow = new Date(now.getTime() + (14 * 24 * 60 * 60 * 1000));
-    const expiringAuths = await prisma.authorization.count({
-        where: {
-            organizationId: user.organizationId,
-            status: 'ACTIVE',
-            endDate: { lte: fourteenDaysFromNow }
-        }
-    });
+    const fourteenDaysFromNow = new Date(now.getTime() + (14 * 24 * 60 * 60 * 1000)).toISOString();
+    const expiringAuths = sql.get<any>(`
+        SELECT COUNT(*) as count FROM Authorization 
+        WHERE organizationId = ? 
+        AND status = 'ACTIVE' 
+        AND endDate <= ?
+    `, [user.organizationId, fourteenDaysFromNow])?.count || 0;
 
     // 3. Unbilled Verified Visits (VERIFIED status, not yet submitted)
     // For this MVP, we consider 'VERIFIED' as ready for billing.
-    const unbilledVerified = await prisma.visit.count({
-        where: {
-            organizationId: user.organizationId,
-            status: 'VERIFIED'
-        }
-    });
+    const unbilledVerified = sql.get<any>(`
+        SELECT COUNT(*) as count FROM Visit 
+        WHERE organizationId = ? 
+        AND status = 'VERIFIED'
+    `, [user.organizationId])?.count || 0;
 
     return {
         missedVisits,
@@ -103,13 +112,16 @@ export async function getEvvStatus() {
     if (!user) throw new Error('Unauthorized');
 
     // Find active visit for this user
-    const activeVisit = await prisma.visit.findFirst({
-        where: {
-            caregiverId: user.id,
-            status: 'IN_PROGRESS'
-        },
-        include: { client: true }
-    });
+    const activeVisit = sql.get<any>(`
+        SELECT * FROM Visit 
+        WHERE caregiverId = ? 
+        AND status = 'IN_PROGRESS'
+        LIMIT 1
+    `, [user.id]);
+
+    if (activeVisit) {
+        activeVisit.client = sql.get(`SELECT * FROM Contact WHERE id = ?`, [activeVisit.clientId]);
+    }
 
     return { activeVisit };
 }
@@ -120,24 +132,20 @@ export async function startVisit(clientId: string, lat: number, lng: number, ser
     if (!user.organizationId) throw new Error('No Organization');
 
     // Check if already in a visit
-    const existing = await prisma.visit.findFirst({
-        where: { caregiverId: user.id, status: 'IN_PROGRESS' }
-    });
+    const existing = sql.get(`
+        SELECT id FROM Visit 
+        WHERE caregiverId = ? AND status = 'IN_PROGRESS'
+        LIMIT 1
+    `, [user.id]);
 
     if (existing) throw new Error('You already have an active visit.');
 
-    await prisma.visit.create({
-        data: {
-            caregiverId: user.id,
-            clientId,
-            organizationId: user.organizationId,
-            serviceType,
-            startDateTime: new Date(),
-            startLatitude: lat,
-            startLongitude: lng,
-            status: 'IN_PROGRESS'
-        }
-    });
+    const visitId = sql.id();
+    const now = sql.now();
+    sql.run(`
+        INSERT INTO Visit (id, caregiverId, clientId, organizationId, serviceType, startDateTime, startLatitude, startLongitude, status, createdAt, updatedAt)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'IN_PROGRESS', ?, ?)
+    `, [visitId, user.id, clientId, user.organizationId, serviceType, now, lat, lng, now, now]);
 
     revalidatePath('/dashboard/evv');
     return { success: true };
@@ -147,42 +155,32 @@ export async function endVisit(visitId: string, lat: number, lng: number, notes?
     const user = await getCurrentUser();
     if (!user) throw new Error('Unauthorized');
 
-    const visit = await prisma.visit.findUnique({
-        where: { id: visitId }
-    });
+    const visit = sql.get<any>(`SELECT * FROM Visit WHERE id = ?`, [visitId]);
 
     if (!visit || visit.caregiverId !== user.id) throw new Error('Visit not found or unauthorized');
     if (visit.status !== 'IN_PROGRESS') throw new Error('Visit is not in progress');
 
-    const updatedVisit = await prisma.visit.update({
-        where: { id: visitId },
-        data: {
-            endDateTime: new Date(),
-            endLatitude: lat,
-            endLongitude: lng,
-            notes,
-            clientSignature: signature,
-            status: 'COMPLETED'
-        },
-        include: { client: true, caregiver: true }
-    });
+    const now = sql.now();
+    sql.run(`
+        UPDATE Visit 
+        SET endDateTime = ?, endLatitude = ?, endLongitude = ?, notes = ?, clientSignature = ?, status = 'COMPLETED', updatedAt = ?
+        WHERE id = ?
+    `, [now, lat, lng, notes, signature, now, visitId]);
+
+    const updatedVisit = sql.get<any>(`SELECT * FROM Visit WHERE id = ?`, [visitId]);
 
     // Attempt Auto-Sync if configured
     try {
-        const config = await (prisma as any).sandataConfig.findUnique({
-            where: { organizationId: user.organizationId }
-        });
+        const config = sql.get<any>(`SELECT * FROM SandataConfig WHERE organizationId = ?`, [user.organizationId]);
 
         if (config) {
             const syncResult = await pushToSandata(updatedVisit, config);
             if (syncResult.success) {
-                await prisma.visit.update({
-                    where: { id: visitId },
-                    data: {
-                        status: 'SUBMITTED',
-                        sandataTransactionId: syncResult.transactionId
-                    }
-                });
+                sql.run(`
+                    UPDATE Visit 
+                    SET status = 'SUBMITTED', sandataTransactionId = ?, updatedAt = ?
+                    WHERE id = ?
+                `, [syncResult.transactionId, sql.now(), visitId]);
             }
         }
     } catch (e) {
@@ -198,24 +196,26 @@ export async function getVisitHistory() {
     const user = await getCurrentUser();
     if (!user || !user.organizationId) return [];
 
-    return await prisma.visit.findMany({
-        where: { organizationId: user.organizationId as string }, // Admins see all, caregivers might only see theirs? For now admin view.
-        include: {
-            caregiver: true,
-            client: true
-        },
-        orderBy: { startDateTime: 'desc' },
-        take: 50
-    });
+    const visits = sql.all<any>(`
+        SELECT * FROM Visit 
+        WHERE organizationId = ? 
+        ORDER BY startDateTime DESC 
+        LIMIT 50
+    `, [user.organizationId]);
+
+    for (const v of visits) {
+        v.caregiver = sql.get(`SELECT * FROM User WHERE id = ?`, [v.caregiverId]);
+        v.client = sql.get(`SELECT * FROM Contact WHERE id = ?`, [v.clientId]);
+    }
+
+    return visits;
 }
 
 export async function getSandataConfig() {
     const user = await getCurrentUser();
     if (!user || !user.organizationId) return null;
 
-    return await (prisma as any).sandataConfig.findUnique({
-        where: { organizationId: user.organizationId }
-    });
+    return sql.get<any>(`SELECT * FROM SandataConfig WHERE organizationId = ?`, [user.organizationId]);
 }
 
 export async function saveSandataConfig(formData: FormData) {
@@ -229,22 +229,21 @@ export async function saveSandataConfig(formData: FormData) {
     const providerId = formData.get('providerId') as string;
     const environment = formData.get('environment') as string;
 
-    const existing = await (prisma as any).sandataConfig.findUnique({
-        where: { organizationId: user.organizationId }
-    });
+    const existing = sql.get<any>(`SELECT id FROM SandataConfig WHERE organizationId = ?`, [user.organizationId]);
+    const now = sql.now();
 
     if (existing) {
-        await (prisma as any).sandataConfig.update({
-            where: { id: existing.id },
-            data: { agencyId, username, password, providerId, environment }
-        });
+        sql.run(`
+            UPDATE SandataConfig 
+            SET agencyId = ?, username = ?, password = ?, providerId = ?, environment = ?, updatedAt = ?
+            WHERE id = ?
+        `, [agencyId, username, password, providerId, environment, now, existing.id]);
     } else {
-        await (prisma as any).sandataConfig.create({
-            data: {
-                organizationId: user.organizationId,
-                agencyId, username, password, providerId, environment
-            }
-        });
+        const id = sql.id();
+        sql.run(`
+            INSERT INTO SandataConfig (id, organizationId, agencyId, username, password, providerId, environment, createdAt, updatedAt)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `, [id, user.organizationId, agencyId, username, password, providerId, environment, now, now]);
     }
 
     revalidatePath('/dashboard/evv');
@@ -256,32 +255,26 @@ export async function scheduleVisit(clientId: string, caregiverId: string, start
     if (!user || !user.organizationId) throw new Error('Unauthorized');
 
     // Basic Matchmaking: Overlap Check
-    const overlapping = await prisma.visit.findFirst({
-        where: {
-            caregiverId,
-            status: { in: ['SCHEDULED', 'IN_PROGRESS', 'COMPLETED', 'VERIFIED'] },
-            AND: [
-                { startDateTime: { lt: end } },
-                { endDateTime: { gt: start } }
-            ]
-        }
-    });
+    const overlapping = sql.get<any>(`
+        SELECT id FROM Visit 
+        WHERE caregiverId = ? 
+        AND status IN ('SCHEDULED', 'IN_PROGRESS', 'COMPLETED', 'VERIFIED') 
+        AND startDateTime < ? 
+        AND endDateTime > ?
+        LIMIT 1
+    `, [caregiverId, end.toISOString(), start.toISOString()]);
 
     if (overlapping) {
         throw new Error(`Caregiver is already booked for an overlapping visit during this time.`);
     }
 
-    await prisma.visit.create({
-        data: {
-            organizationId: user.organizationId,
-            clientId,
-            caregiverId,
-            startDateTime: start,
-            endDateTime: end,
-            serviceType,
-            status: 'SCHEDULED'
-        }
-    });
+    const id = sql.id();
+    const now = sql.now();
+
+    sql.run(`
+        INSERT INTO Visit (id, organizationId, clientId, caregiverId, startDateTime, endDateTime, serviceType, status, createdAt, updatedAt)
+        VALUES (?, ?, ?, ?, ?, ?, ?, 'SCHEDULED', ?, ?)
+    `, [id, user.organizationId, clientId, caregiverId, start.toISOString(), end.toISOString(), serviceType, now, now]);
 
     revalidatePath('/dashboard/evv');
     return { success: true };
@@ -292,28 +285,21 @@ export async function manualSync(visitId: string) {
 
     // Authorization check
 
-    const visit = await prisma.visit.findUnique({
-        where: { id: visitId },
-        include: { client: true, caregiver: true }
-    });
+    const visit = sql.get<any>(`SELECT * FROM Visit WHERE id = ?`, [visitId]);
 
     if (!visit || !visit.organizationId) return { error: 'Invalid visit' };
 
-    const config = await (prisma as any).sandataConfig.findUnique({
-        where: { organizationId: visit.organizationId }
-    });
+    const config = sql.get<any>(`SELECT * FROM SandataConfig WHERE organizationId = ?`, [visit.organizationId]);
 
     if (!config) return { error: 'Sandata not configured' };
 
     const syncResult = await pushToSandata(visit, config);
     if (syncResult.success) {
-        await prisma.visit.update({
-            where: { id: visitId },
-            data: {
-                status: 'SUBMITTED',
-                sandataTransactionId: syncResult.transactionId
-            }
-        });
+        sql.run(`
+            UPDATE Visit 
+            SET status = 'SUBMITTED', sandataTransactionId = ?, updatedAt = ?
+            WHERE id = ?
+        `, [syncResult.transactionId, sql.now(), visitId]);
         revalidatePath('/dashboard/evv');
         return { success: true };
     }
@@ -327,42 +313,30 @@ export async function getEvvExceptions() {
     if (!user || !user.organizationId) return { success: false, data: [] };
 
     const now = new Date();
-    const fifteenMinutesAgo = new Date(now.getTime() - 15 * 60 * 1000);
+    const fifteenMinutesAgo = new Date(now.getTime() - 15 * 60 * 1000).toISOString();
 
     // 1. Late Starts
-    const lateVisits = await prisma.visit.findMany({
-        where: {
-            organizationId: user.organizationId,
-            status: 'SCHEDULED',
-            startDateTime: { lt: fifteenMinutesAgo }
-        },
-        include: { client: true, caregiver: true }
-    });
+    const lateVisits = sql.all<any>(`
+        SELECT * FROM Visit 
+        WHERE organizationId = ? 
+        AND status = 'SCHEDULED' 
+        AND startDateTime < ?
+    `, [user.organizationId, fifteenMinutesAgo]);
+
+    for (const v of lateVisits) {
+        v.client = sql.get(`SELECT * FROM Contact WHERE id = ?`, [v.clientId]);
+        v.caregiver = sql.get(`SELECT * FROM User WHERE id = ?`, [v.caregiverId]);
+    }
 
     const exceptions = lateVisits.map(v => ({
         id: v.id,
         type: 'Late Start',
-        staff: v.caregiver.name || 'Unknown',
-        client: `${v.client.firstName} ${v.client.lastName}`,
-        detail: `Scheduled: ${v.startDateTime.toLocaleTimeString()} | Now: ${now.toLocaleTimeString()}`,
+        staff: v.caregiver?.name || 'Unknown',
+        client: `${v.client?.firstName} ${v.client?.lastName}`,
+        detail: `Scheduled: ${v.startDateTime} | Now: ${now.toLocaleTimeString()}`,
         color: 'rose',
         status: 'OPEN'
     }));
-
-    // 2. GPS Mismatch (visits with recorded lat/long)
-    // In a real app we'd use PostGIS distance, here we fetch and filter in JS for now (not efficient but checking logic)
-    const gpsVisits = await prisma.visit.findMany({
-        where: {
-            organizationId: user.organizationId,
-            status: { in: ['IN_PROGRESS', 'COMPLETED', 'VERIFIED'] },
-            startLatitude: { not: null }
-        },
-        include: { client: true, caregiver: true }
-    });
-
-    // Mock check for GPS mismatch if client has lat/long (assuming client has address geocoded - wait client model only has address string)
-    // So we skip this for now unless we geocode. 
-    // We'll return just Late Starts for this MVP iteration of real data.
 
     return { success: true, data: exceptions };
 }

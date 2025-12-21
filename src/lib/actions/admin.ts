@@ -1,6 +1,6 @@
 'use server';
 
-import { prisma } from '@/lib/db';
+import { sql } from '@/lib/db-sql';
 import { getCurrentUser } from '@/lib/auth';
 import { revalidatePath } from 'next/cache';
 
@@ -12,30 +12,28 @@ export async function getOrganizationUsers() {
     }
 
     // Isolate: Only fetch users from the same organization
-    return await prisma.user.findMany({
-        where: {
-            organizationId: currentUser.organizationId
-        },
-        orderBy: {
-            createdAt: 'desc'
-        }
-    });
+    return sql.all<any>(`
+        SELECT * FROM User 
+        WHERE organizationId = ? 
+        ORDER BY createdAt DESC
+    `, [currentUser.organizationId]);
 }
 
 export async function getUser(id: string) {
     const currentUser = await getCurrentUser();
     if (!currentUser.organizationId) return null;
 
-    return await prisma.user.findFirst({
-        where: {
-            id,
-            organizationId: currentUser.organizationId
-        },
-        include: {
-            documents: true,
-            certifications: true
-        }
-    });
+    const user = sql.get<any>(`
+        SELECT * FROM User 
+        WHERE id = ? AND organizationId = ?
+    `, [id, currentUser.organizationId]);
+
+    if (user) {
+        user.documents = sql.all(`SELECT * FROM Document WHERE userId = ?`, [user.id]);
+        user.certifications = sql.all(`SELECT * FROM Certification WHERE userId = ?`, [user.id]);
+    }
+
+    return user;
 }
 
 export async function uploadEmployeeDocument(userId: string, formData: FormData) {
@@ -47,15 +45,13 @@ export async function uploadEmployeeDocument(userId: string, formData: FormData)
     const name = `${type}_${new Date().getFullYear()}.pdf`;
 
     try {
-        await prisma.document.create({
-            data: {
-                name,
-                type: 'application/pdf',
-                size: 1024, // Mock size
-                userId,
-                organizationId: currentUser.organizationId
-            }
-        });
+        const id = sql.id();
+        const now = sql.now();
+        sql.run(`
+            INSERT INTO Document (id, name, type, size, userId, organizationId, createdAt, updatedAt)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        `, [id, name, 'application/pdf', 1024, userId, currentUser.organizationId, now, now]);
+
         revalidatePath(`/dashboard/admin/users/${userId}`);
         return { success: true };
     } catch (e) {
@@ -81,14 +77,13 @@ export async function createUserAction(formData: FormData) {
     const role = formData.get('role') as string || 'USER';
 
     try {
-        await prisma.user.create({
-            data: {
-                email,
-                name,
-                role,
-                organizationId: currentUser.organizationId
-            }
-        });
+        const id = sql.id();
+        const now = sql.now();
+        sql.run(`
+            INSERT INTO User (id, email, name, role, organizationId, createdAt, updatedAt)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        `, [id, email, name, role, currentUser.organizationId, now, now]);
+
         revalidatePath('/dashboard/admin');
         return { success: true };
     } catch (error) {

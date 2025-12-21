@@ -3,7 +3,7 @@ import { getDashboardStats } from '@/lib/actions/evv';
 import { getVisitsRequiringAttention } from '@/lib/actions/billing';
 import { getPayrollData } from '@/lib/actions/payroll';
 import { getCurrentUser } from '@/lib/auth';
-import { prisma } from '@/lib/db';
+import { sql } from '@/lib/db-sql';
 import {
     MorningCoffeeWidget,
     BillingAttentionWidget,
@@ -19,31 +19,33 @@ export default async function DashboardOverview() {
     if (!user) return null;
 
     // 1. Fetch Configuration
-    const config = await prisma.moduleConfig.findUnique({
-        where: { organizationId: user.organizationId || 'default' }
-    });
+    const config = sql.get<any>(`SELECT * FROM ModuleConfig WHERE organizationId = ?`, [user.organizationId || 'default']);
 
     const defaultLayout = ['morning_coffee', 'billing_attention', 'crm_metrics', 'payroll_watchdog'];
     const currentLayout: string[] = (config?.dashboardLayout && config.dashboardLayout !== 'default')
         ? JSON.parse(config.dashboardLayout)
         : defaultLayout;
 
+    // Date for call count (start of today)
+    const startOfDay = new Date();
+    startOfDay.setHours(0, 0, 0, 0);
+    const startOfDayIso = startOfDay.toISOString();
+
     // 2. Fetch Data for all potentially enabled widgets
     const [
         stats,
         attentionVisits,
-        payrollData,
-        crmContactCount,
-        faxCount,
-        callCount
+        payrollData
     ] = await Promise.all([
         getDashboardStats(),
         getVisitsRequiringAttention(),
-        getPayrollData(),
-        prisma.contact.count({ where: { organizationId: user.organizationId || 'default' } }),
-        prisma.fax.count({ where: { organizationId: user.organizationId || 'default' } }),
-        prisma.message.count({ where: { organizationId: user.organizationId || 'default', createdAt: { gte: new Date(new Date().setHours(0, 0, 0, 0)) } } })
+        getPayrollData()
     ]);
+
+    // Simple counts don't need async if we use synchronous sql wrapper, but Promise.all is fine for grouping logic
+    const crmContactCount = sql.get<any>(`SELECT COUNT(*) as c FROM Contact WHERE organizationId = ?`, [user.organizationId || 'default'])?.c || 0;
+    const faxCount = sql.get<any>(`SELECT COUNT(*) as c FROM Fax WHERE organizationId = ?`, [user.organizationId || 'default'])?.c || 0;
+    const callCount = sql.get<any>(`SELECT COUNT(*) as c FROM Message WHERE organizationId = ? AND createdAt >= ?`, [user.organizationId || 'default', startOfDayIso])?.c || 0;
 
     // 3. Render Widgets
     const renderWidget = (id: string) => {

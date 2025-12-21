@@ -83,7 +83,7 @@ export default async function AuditPacketPage({
                             </tr>
                         </thead>
                         <tbody>
-                            {client.authorizations.map(auth => (
+                            {client.authorizations.map((auth: any) => (
                                 <tr key={auth.id} style={{ borderBottom: '1px solid #eee', fontSize: '14px' }}>
                                     <td style={{ padding: '8px 0' }}>{auth.authNumber}</td>
                                     <td>{auth.serviceCode}</td>
@@ -106,7 +106,7 @@ export default async function AuditPacketPage({
                     <h3 style={{ borderBottom: '1px solid #000', paddingBottom: '5px', fontSize: '18px' }}>EVV Timesheets & Verification Logs</h3>
                     <p style={{ fontSize: '12px', color: '#666', marginBottom: '20px' }}>*All records verified via GPS and electronic caregiver signature.</p>
 
-                    {client.clientVisits.map((visit, idx) => (
+                    {client.clientVisits.map((visit: any, idx: number) => (
                         <div key={visit.id} style={{
                             marginTop: '20px',
                             padding: '15px',

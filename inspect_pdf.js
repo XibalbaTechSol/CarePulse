@@ -20,6 +20,12 @@ async function inspectPDF(path) {
 }
 
 (async () => {
-    await inspectPDF('public/templates/CMS-485-P.pdf');
-    await inspectPDF('public/templates/F-62274A.pdf');
+    const files = process.argv.slice(2);
+    if (files.length === 0) {
+        console.log('Usage: node inspect_pdf.js <file1> <file2> ...');
+    } else {
+        for (const file of files) {
+            await inspectPDF(file);
+        }
+    }
 })();

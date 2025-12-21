@@ -1,26 +1,20 @@
 'use client';
 
-import React, { useRef, useEffect, useState } from 'react';
-import { useChat } from '@ai-sdk/react';
-import { Send, User, Sparkles } from 'lucide-react';
-import AudioPulse from './AudioPulse';
+import React, { useState, useRef, useEffect } from 'react';
+import { Send, Mic, MicOff } from 'lucide-react';
+import OrbWrapper, { OrbRef } from './OrbWrapper';
+
+interface Message {
+    role: 'ai' | 'user';
+    text: string;
+}
 
 export default function ChatInterface() {
-    const { messages, append, isLoading } = useChat() as any; // eslint-disable-line @typescript-eslint/no-explicit-any
-    const [input, setInput] = useState('');
-    const [volume, setVolume] = useState(0);
+    const [transcript, setTranscript] = useState<Message[]>([]);
+    const [inputText, setInputText] = useState('');
+    const [isRecording, setIsRecording] = useState(false);
+    const orbRef = useRef<OrbRef>(null);
     const messagesEndRef = useRef<HTMLDivElement>(null);
-
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setInput(e.target.value);
-    };
-
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!input.trim()) return;
-        await append({ role: 'user', content: input });
-        setInput('');
-    };
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -28,106 +22,142 @@ export default function ChatInterface() {
 
     useEffect(() => {
         scrollToBottom();
-    }, [messages]);
+    }, [transcript]);
 
-    // Mock volume effect when loading
-    useEffect(() => {
-        let interval: NodeJS.Timeout;
-        if (isLoading) {
-            interval = setInterval(() => {
-                setVolume(Math.random() * 0.15 + 0.05); // Subtle oscillation
-            }, 150);
-        } else {
-            setVolume(0);
+    const handleAiText = (text: string) => {
+        setTranscript(prev => {
+            const last = prev[prev.length - 1];
+            if (last && last.role === 'ai') {
+                return [...prev.slice(0, -1), { ...last, text: last.text + text }];
+            }
+            return [...prev, { role: 'ai', text }];
+        });
+    };
+
+    const handleUserText = (text: string) => {
+        setTranscript(prev => {
+            const last = prev[prev.length - 1];
+            if (last && last.role === 'user') {
+                return [...prev.slice(0, -1), { ...last, text: text }]; // Update if it's streaming? Usually user text is final block
+            }
+            return [...prev, { role: 'user', text }];
+        });
+    };
+
+    const handleSendMessage = () => {
+        if (!inputText.trim()) return;
+        
+        // Add to transcript immediately for better UX
+        setTranscript(prev => [...prev, { role: 'user', text: inputText }]);
+        
+        // Send to AI
+        orbRef.current?.sendText(inputText);
+        setInputText('');
+    };
+
+    const handleKeyDown = (e: React.KeyboardEvent) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            handleSendMessage();
         }
+    };
 
-        return () => {
-            if (interval) clearInterval(interval);
-        };
-    }, [isLoading]);
+    const toggleRecording = () => {
+        orbRef.current?.toggleRecording();
+    };
 
     return (
-        <div className="flex flex-col h-[600px] w-full max-w-4xl mx-auto glass overflow-hidden border border-[var(--glass-border)]">
-            {/* Header */}
-            <div className="p-4 border-b border-[var(--glass-border)] bg-[rgba(255,255,255,0.03)] flex items-center gap-2">
-                <Sparkles className="text-[var(--accent)]" size={20} />
-                <h2 className="font-semibold text-lg">AI Assistant</h2>
+        <div className="h-[calc(100vh-140px)] w-full overflow-hidden rounded-2xl bg-black border border-white/10 shadow-2xl flex flex-col">
+            
+            {/* Top 2/3: Background Orb */}
+            <div className="h-[66%] w-full relative z-0">
+                <OrbWrapper 
+                    ref={orbRef}
+                    onAiText={handleAiText} 
+                    onUserText={handleUserText} 
+                    onRecordingChange={setIsRecording}
+                    headless={true}
+                />
             </div>
 
-            {/* Messages Area */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                {messages.length === 0 && (
-                    <div className="text-center text-[var(--text-muted)] mt-10 flex flex-col items-center">
-                        <div className="mb-4 opacity-50">
-                            <AudioPulse active={false} volume={0} hover={true} />
+            {/* Bottom 1/3: Chat Interface */}
+            <div className="h-[34%] w-full flex flex-col bg-black/40 border-t border-white/10 z-10">
+                
+                {/* Chat History - Scrollable */}
+                <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                    {transcript.length === 0 && (
+                        <div className="h-full flex flex-col items-center justify-center text-center opacity-50 text-white/50 animate-pulse">
+                            <p className="text-sm font-light">How can I help you today?</p>
                         </div>
-                        <p className="text-lg">How can I help you today?</p>
-                        <p className="text-sm opacity-75">Ask me about your leads, deals, or schedule.</p>
-                    </div>
-                )}
-
-                {messages.map((m: { id: string, role: string, content: string }) => (
-                    <div
-                        key={m.id}
-                        className={`flex gap-3 ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}
-                    >
-                        {m.role !== 'user' && (
-                            <div className="w-8 h-8 rounded-full bg-[rgba(6,182,212,0.1)] flex items-center justify-center shrink-0">
-                                <AudioPulse active={false} volume={0} />
-                            </div>
-                        )}
-
-                        <div
-                            className={`max-w-[80%] p-3 rounded-2xl ${m.role === 'user'
-                                ? 'bg-[var(--accent)] text-white rounded-br-none'
-                                : 'bg-[var(--glass-bg)] border border-[var(--glass-border)] rounded-bl-none'
-                                }`}
+                    )}
+                    
+                    {transcript.map((msg, idx) => (
+                        <div 
+                            key={idx} 
+                            className={`flex w-full ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
                         >
-                            <p className="whitespace-pre-wrap text-sm leading-relaxed">{m.content}</p>
+                            <div 
+                                className={`
+                                    max-w-[90%] rounded-xl px-4 py-2 text-sm backdrop-blur-sm shadow-sm
+                                    ${msg.role === 'user' 
+                                        ? 'bg-primary/10 text-white border border-primary/20 rounded-br-none' 
+                                        : 'bg-white/5 text-cyan-50 border border-white/10 rounded-bl-none'
+                                    }
+                                `}
+                            >
+                                {msg.text}
+                            </div>
                         </div>
-
-                        {
-                            m.role === 'user' && (
-                                <div className="w-8 h-8 rounded-full bg-[rgba(255,255,255,0.1)] flex items-center justify-center shrink-0">
-                                    <User size={16} className="text-[var(--text-main)]" />
-                                </div>
-                            )
-                        }
-                    </div>
-                ))}
-                {isLoading && (
-                    <div className="flex gap-3 justify-start">
-                        <div className="w-8 h-8 rounded-full bg-[rgba(6,182,212,0.1)] flex items-center justify-center shrink-0">
-                            <AudioPulse active={true} volume={volume} />
-                        </div>
-                        <div className="bg-[var(--glass-bg)] border border-[var(--glass-border)] rounded-2xl rounded-bl-none p-3 flex items-center gap-1">
-                            <div className="w-2 h-2 bg-[var(--text-muted)] rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-                            <div className="w-2 h-2 bg-[var(--text-muted)] rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
-                            <div className="w-2 h-2 bg-[var(--text-muted)] rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
-                        </div>
-                    </div>
-                )}
-                <div ref={messagesEndRef} />
-            </div>
-
-            {/* Input Area */}
-            <form onSubmit={handleSubmit} className="p-4 border-t border-[var(--glass-border)] bg-[rgba(255,255,255,0.03)]">
-                <div className="relative flex items-center">
-                    <input
-                        className="w-full bg-[rgba(0,0,0,0.2)] text-[var(--text-main)] placeholder-[var(--text-muted)] border border-[var(--glass-border)] rounded-xl py-3 pl-4 pr-12 focus:outline-none focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)] transition-all"
-                        value={input}
-                        onChange={handleInputChange}
-                        placeholder="Type your message..."
-                    />
-                    <button
-                        type="submit"
-                        disabled={isLoading || !input.trim()}
-                        className="absolute right-2 p-2 bg-[var(--accent)] text-white rounded-lg hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-opacity"
-                    >
-                        <Send size={16} />
-                    </button>
+                    ))}
+                    <div ref={messagesEndRef} />
                 </div>
-            </form>
+
+                {/* Input Area - Fixed at Bottom */}
+                <div className="p-4 bg-black/60 backdrop-blur-md border-t border-white/5">
+                    <div className="max-w-4xl mx-auto flex items-end gap-3 p-1 rounded-xl">
+                        
+                        <button
+                            onClick={toggleRecording}
+                            className={`
+                                p-3 rounded-lg transition-all duration-300 flex items-center justify-center shrink-0
+                                ${isRecording 
+                                    ? 'bg-red-500/20 text-red-500 hover:bg-red-500/30 animate-pulse border border-red-500/50' 
+                                    : 'bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white border border-white/10'
+                                }
+                            `}
+                            title={isRecording ? "Stop Listening" : "Start Listening"}
+                        >
+                            {isRecording ? <MicOff size={20} /> : <Mic size={20} />}
+                        </button>
+
+                        <div className="flex-1 relative">
+                            <textarea
+                                value={inputText}
+                                onChange={(e) => setInputText(e.target.value)}
+                                onKeyDown={handleKeyDown}
+                                placeholder="Type a message..."
+                                className="w-full bg-white/5 text-white placeholder-gray-500 text-sm p-3 rounded-lg border border-white/10 focus:border-primary/50 focus:bg-white/10 max-h-[100px] resize-none focus:outline-none scrollbar-hide transition-all"
+                                rows={1}
+                                style={{ minHeight: '46px' }}
+                            />
+                        </div>
+
+                        <button
+                            onClick={handleSendMessage}
+                            disabled={!inputText.trim()}
+                            className={`
+                                p-3 rounded-lg transition-all duration-200 shrink-0
+                                ${inputText.trim() 
+                                    ? 'bg-primary text-black hover:bg-primary-light hover:shadow-[0_0_15px_rgba(var(--primary-rgb),0.5)]' 
+                                    : 'bg-white/5 text-gray-600 cursor-not-allowed border border-white/10'
+                                }
+                            `}
+                        >
+                            <Send size={20} />
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div>
     );
 }

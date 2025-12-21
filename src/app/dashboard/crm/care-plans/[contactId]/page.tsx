@@ -1,24 +1,22 @@
 import React from 'react';
-import { prisma } from '@/lib/db';
+import { sql } from '@/lib/db-sql';
 import CarePlanBuilder from '@/components/crm/CarePlanBuilder';
 
 export default async function CarePlanBuilderPage({ params }: { params: Promise<{ contactId: string }> }) {
     const { contactId } = await params;
 
-    const client = await prisma.contact.findUnique({
-        where: { id: contactId },
-        include: {
-            carePlans: {
-                where: { status: 'ACTIVE' },
-                include: { tasks: true }
-            }
-        }
-    });
+    const client = sql.get<any>(`SELECT * FROM Contact WHERE id = ?`, [contactId]);
 
     if (!client) return <div style={{ padding: '2rem' }}>Client not found</div>;
 
+    // Hydrate care plans
+    client.carePlans = sql.all(`SELECT * FROM CarePlan WHERE contactId = ? AND status = 'ACTIVE'`, [contactId]);
+    for (const plan of client.carePlans) {
+        plan.tasks = sql.all(`SELECT * FROM CarePlanTask WHERE carePlanId = ?`, [plan.id]);
+    }
+
     const activeCarePlan = client.carePlans[0];
-    const initialTasks = activeCarePlan?.tasks.map(t => ({
+    const initialTasks = activeCarePlan?.tasks.map((t: any) => ({
         taskName: t.taskName,
         category: t.category || 'ADL'
     })) || [];

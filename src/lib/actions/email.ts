@@ -1,7 +1,7 @@
 'use server';
 
 import { ImapFlow } from 'imapflow';
-import { prisma } from '@/lib/db';
+import { sql } from '@/lib/db-sql';
 import { decrypt } from '@/lib/encryption';
 
 export async function getRealEmailsAction(userId: string) {
@@ -15,9 +15,11 @@ export async function getRealEmailsAction(userId: string) {
             };
         }
 
-        const account = await prisma.emailAccount.findFirst({
-            where: { userId, isActive: true },
-        });
+        const account = sql.get<any>(`
+            SELECT * FROM EmailAccount 
+            WHERE userId = ? AND isActive = 1 
+            ORDER BY createdAt DESC LIMIT 1
+        `, [userId]);
 
         if (!account) {
             return { error: 'No active email account configured. Please go to settings.' };

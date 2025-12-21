@@ -1,5 +1,7 @@
 'use client';
 
+'use client';
+
 import React, { useEffect, useState } from 'react';
 import { getClient, createCarePlanTask, ensureCarePlan } from '@/lib/actions/crm';
 import {

@@ -1,5 +1,7 @@
 'use client';
 
+'use client';
+
 import React, { useState, useEffect } from 'react';
 import { getPayrollData, exportPayrollCSV } from '@/lib/actions/payroll';
 import {

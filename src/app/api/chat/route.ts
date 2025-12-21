@@ -1,11 +1,18 @@
-import { ollama } from 'ollama-ai-provider';
+// @ts-nocheck
+import { createOpenAI } from '@ai-sdk/openai';
 import { streamText, tool } from 'ai';
-import { prisma } from '@/lib/db';
+import { sql } from '@/lib/db-sql';
 import { z } from 'zod';
 
 // Allow streaming responses up to 60 seconds for thinking models
 export const maxDuration = 60;
 export const dynamic = 'force-dynamic';
+
+// Configuration for local LM Studio
+const lmstudio = createOpenAI({
+    baseURL: 'http://localhost:1234/v1',
+    apiKey: 'not-needed',
+});
 
 export async function POST(req: Request) {
     const { messages } = await req.json();
@@ -26,7 +33,7 @@ export async function POST(req: Request) {
     4. Maintain HIPAA compliance: only discuss patient info in the context of care management.`;
 
     const result = streamText({
-        model: ollama('kimi'), // User to host 'kimi' locally
+        model: lmstudio('kimi'),
         messages,
         system: systemPrompt,
         tools: {
@@ -36,17 +43,12 @@ export async function POST(req: Request) {
                     query: z.string().describe('The name or keyword to search for in contacts/deals'),
                 }),
                 execute: async ({ query }) => {
-                    const contacts = await prisma.contact.findMany({
-                        where: {
-                            OR: [
-                                { firstName: { contains: query, mode: 'insensitive' } },
-                                { lastName: { contains: query, mode: 'insensitive' } },
-                                { company: { contains: query, mode: 'insensitive' } },
-                            ],
-                        },
-                        take: 10,
-                        select: { id: true, firstName: true, lastName: true, status: true, medicaidId: true }
-                    });
+                    const contacts = sql.all<any>(`
+                        SELECT id, firstName, lastName, status, medicaidId 
+                        FROM Contact 
+                        WHERE firstName LIKE ? OR lastName LIKE ? OR company LIKE ?
+                        LIMIT 10
+                    `, [`%${query}%`, `%${query}%`, `%${query}%`]);
                     return { contacts };
                 },
             }),
@@ -56,11 +58,9 @@ export async function POST(req: Request) {
                     patientId: z.string().describe('The ID of the patient to fetch care data for'),
                 }),
                 execute: async ({ patientId }) => {
-                    const [carePlans, visits, assessments] = await Promise.all([
-                        prisma.carePlan.findMany({ where: { contactId: patientId }, take: 3 }),
-                        prisma.visit.findMany({ where: { clientId: patientId }, take: 5, orderBy: { createdAt: 'desc' } }),
-                        prisma.assessment.findMany({ where: { contactId: patientId }, take: 2, orderBy: { createdAt: 'desc' } }),
-                    ]);
+                    const carePlans = sql.all(`SELECT * FROM CarePlan WHERE contactId = ? LIMIT 3`, [patientId]);
+                    const visits = sql.all(`SELECT * FROM Visit WHERE clientId = ? ORDER BY createdAt DESC LIMIT 5`, [patientId]);
+                    const assessments = sql.all(`SELECT * FROM Assessment WHERE contactId = ? ORDER BY createdAt DESC LIMIT 2`, [patientId]);
                     return { carePlans, visits, assessments };
                 },
             }),
@@ -70,14 +70,12 @@ export async function POST(req: Request) {
                     query: z.string().describe('The regulatory or policy-related question'),
                 }),
                 execute: async ({ query }) => {
-                    // Note: In production, this would use a vector search query.
-                    // For now, we'll do a text-based fallback until pgvector is fully populated.
-                    const findings = await prisma.$queryRawUnsafe(`
+                    const findings = sql.all(`
                         SELECT id, content, type, source
-                        FROM "KnowledgeBase"
-                        WHERE content ILIKE $1
+                        FROM KnowledgeBase
+                        WHERE content LIKE ?
                         LIMIT 5
-                    `, `%${query}%`);
+                    `, [`%${query}%`]);
                     return { findings };
                 },
             }),

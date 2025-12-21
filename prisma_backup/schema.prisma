@@ -8,7 +8,6 @@ generator client {
 
 datasource db {
   provider = "sqlite"
-  url      = env("DATABASE_URL")
 }
 
 model Organization {
@@ -225,6 +224,7 @@ model Fax {
   recipient      String
   fileUrl        String?
   remoteJobId    String? // Tracking ID from SRFax
+  isRead         Boolean       @default(false)
   userId         String
   user           User          @relation(fields: [userId], references: [id])
   organizationId String?

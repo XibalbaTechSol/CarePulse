@@ -1,9 +1,6 @@
-import { PrismaClient } from '@prisma/client';
-import { ollama } from 'ollama-ai-provider';
+import { sql } from '../db-sql';
 import fs from 'fs';
 import path from 'path';
-
-const prisma = new PrismaClient();
 
 async function indexDocument(filePath: string, organizationId: string) {
     console.log(`Processing ${filePath}...`);
@@ -18,15 +15,13 @@ async function indexDocument(filePath: string, organizationId: string) {
         // In a real scenario, you'd use an embedding model here
         // const embedding = await generateEmbedding(chunk);
 
-        await prisma.knowledgeBase.create({
-            data: {
-                organizationId,
-                content: chunk,
-                source: path.basename(filePath),
-                type: 'REGULATION',
-                // embedding: embedding // Requires raw SQL for pgvector insertion in Prisma
-            }
-        });
+        const id = sql.id();
+        const now = sql.now();
+
+        sql.run(`
+            INSERT INTO KnowledgeBase (id, organizationId, content, source, type, createdAt, updatedAt)
+            VALUES (?, ?, ?, ?, 'REGULATION', ?, ?)
+        `, [id, organizationId, chunk, path.basename(filePath), now, now]);
     }
 
     console.log(`Completed indexing ${filePath}`);

@@ -1,7 +1,6 @@
-
 import { SipProvider } from '@/lib/contexts/SipContext';
 import FloatingDialer from '@/components/voip/FloatingDialer';
-import { prisma } from '@/lib/db';
+import { sql } from '@/lib/db-sql';
 import { getCurrentUser } from '@/lib/auth';
 import { decrypt } from '@/lib/encryption';
 import DashboardShell from '@/components/DashboardShell';
@@ -14,9 +13,7 @@ export default async function DashboardLayout({
     const user = await getCurrentUser();
     if (!user) return null;
 
-    const modules = await prisma.moduleConfig.findUnique({
-        where: { organizationId: user.organizationId || 'default' }
-    });
+    const modules = sql.get<any>(`SELECT * FROM ModuleConfig WHERE organizationId = ?`, [user.organizationId || 'default']);
 
     const navItems = [
         { name: 'Dashboard', href: '/dashboard', icon: '🏠', enabled: true },
@@ -45,9 +42,7 @@ export default async function DashboardLayout({
         navItems.push({ name: 'Admin', href: '/dashboard/admin', icon: '🛡️', enabled: true });
     }
 
-    const sipConfig = await prisma.sipAccount.findUnique({
-        where: { userId: user.id }
-    });
+    const sipConfig = sql.get<any>(`SELECT * FROM SipAccount WHERE userId = ?`, [user.id]);
 
     if (sipConfig && sipConfig.password) {
         try {

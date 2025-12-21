@@ -9,13 +9,16 @@
 }
 
 .audioPulse>div {
-    background-color: var(--text-muted);
+    background-color: var(--accent);
+    /* Changed from text-muted for better visibility */
     /* Using project variables */
     border-radius: 1000px;
     width: 4px;
-    min-height: 4px;
+    min-height: 8px;
+    /* Increased from 4px */
     transition: height 0.1s;
-    opacity: 0.5;
+    opacity: 0.8;
+    /* Increased from 0.5 */
 }
 
 .audioPulse.active>div {

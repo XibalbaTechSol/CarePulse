@@ -1,5 +1,7 @@
 'use client';
 
+'use client';
+
 import React, { useState } from 'react';
 import EmailDashboard from '@/components/email/EmailDashboard';
 import EmailConfigForm from '@/components/email/EmailConfigForm';

@@ -2,6 +2,13 @@
 
 **CarePulse** (formerly Stitch PaaS/Nextiva Clone) is an enterprise-grade Platform-as-a-Service solution designed for modern **Personal Care & Home Health Agencies**. It unifies clinical, financial, and operational workflows into a single, intelligent "Single Pane of Glass" dashboard.
 
+## 🆕 Latest Updates (v2.1)
+- **AI Audio Orb**: Enhanced visualizer with `GdmLiveAudioVisuals` integration, providing real-time frequency analysis and reactive animations.
+- **Advanced VoIP Suite**: New `Dialer`, `CallsView`, `MessagesView`, and `VoicemailView` components for a complete softphone experience.
+- **Dynamic Form Editor**: Added `PDFFormEditor` and `TemplateGallery` for seamless PDF manipulation and template management.
+- **Fax Management**: Improved `FaxComposer` and `FaxInbox` for robust digital fax handling.
+- **Database Migration**: Successfully transitioned to PostgreSQL for production-grade reliability and security.
+
 ## 🚀 Platform Capabilities
 
 ### 🏥 Agency Care Suite

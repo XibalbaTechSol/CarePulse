@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { useSip } from '@/lib/contexts/SipContext';
+import { Phone, Search } from 'lucide-react';
 
 export default function Dialer() {
     const [number, setNumber] = useState('');
@@ -17,92 +18,99 @@ export default function Dialer() {
         }
     };
 
-    const keys = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '*', '0', '#'];
+    const keys = [
+        { main: '1', sub: '' }, { main: '2', sub: 'ABC' }, { main: '3', sub: 'DEF' },
+        { main: '4', sub: 'GHI' }, { main: '5', sub: 'JKL' }, { main: '6', sub: 'MNO' },
+        { main: '7', sub: 'PQRS' }, { main: '8', sub: 'TUV' }, { main: '9', sub: 'WXYZ' },
+        { main: '*', sub: '' }, { main: '0', sub: '+' }, { main: '#', sub: '' }
+    ];
 
     return (
-        <div className="glass" style={{
-            width: '320px',
-            padding: '2rem',
+        <div style={{
+            width: '280px',
             display: 'flex',
             flexDirection: 'column',
-            gap: '2rem',
-            margin: '0 auto'
+            gap: '1.5rem',
         }}>
             <div style={{
-                background: 'rgba(0,0,0,0.2)',
-                padding: '1.5rem',
-                borderRadius: '12px',
-                textAlign: 'center',
-                fontSize: '2rem',
-                height: '80px',
                 display: 'flex',
                 alignItems: 'center',
-                justifyContent: 'center',
-                letterSpacing: '0.1em'
+                justifyContent: 'space-between',
+                padding: '0 0.5rem'
             }}>
-                {number || '000-000-0000'}
+                <div style={{
+                    fontSize: '1.25rem',
+                    color: 'var(--text-main)',
+                    flex: 1,
+                    textAlign: 'left',
+                    padding: '0.5rem',
+                    minHeight: '2rem'
+                }}>
+                    {number || 'Enter a name or number'}
+                </div>
+                {number && (
+                    <button
+                        onClick={() => setNumber('')}
+                        style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}
+                    >
+                        clear
+                    </button>
+                )}
             </div>
 
             <div style={{
                 display: 'grid',
                 gridTemplateColumns: 'repeat(3, 1fr)',
-                gap: '1rem'
+                gap: '1rem',
+                justifyItems: 'center'
             }}>
                 {keys.map(key => (
                     <button
-                        key={key}
-                        onClick={() => handleKeyPress(key)}
+                        key={key.main}
+                        onClick={() => handleKeyPress(key.main)}
                         className="glass-hover"
                         style={{
-                            width: '60px',
-                            height: '60px',
-                            borderRadius: '30px',
-                            background: 'rgba(255,255,255,0.05)',
-                            border: '1px solid var(--glass-border)',
+                            width: '64px',
+                            height: '64px',
+                            borderRadius: '50%',
+                            background: 'transparent',
+                            border: 'none',
                             color: 'var(--text-main)',
-                            fontSize: '1.25rem',
                             cursor: 'pointer',
                             display: 'flex',
+                            flexDirection: 'column',
                             alignItems: 'center',
-                            justifyContent: 'center'
+                            justifyContent: 'center',
+                            transition: 'background 0.2s'
                         }}
                     >
-                        {key}
+                        <span style={{ fontSize: '1.5rem', lineHeight: 1 }}>{key.main}</span>
+                        {key.sub && <span style={{ fontSize: '0.6rem', color: 'var(--text-muted)', textTransform: 'uppercase', marginTop: '2px' }}>{key.sub}</span>}
                     </button>
                 ))}
             </div>
 
-            <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
-                <button
-                    onClick={() => setNumber(prev => prev.slice(0, -1))}
-                    className="glass-hover"
-                    style={{
-                        flex: 1,
-                        padding: '1rem',
-                        borderRadius: '12px',
-                        background: 'rgba(255,255,255,0.05)',
-                        border: '1px solid var(--glass-border)',
-                        color: 'var(--text-main)',
-                        cursor: 'pointer'
-                    }}
-                >
-                    Delete
-                </button>
+            <div style={{ display: 'flex', justifyContent: 'center', marginTop: '1rem' }}>
                 <button
                     onClick={handleCall}
+                    disabled={!number}
                     style={{
-                        flex: 2,
-                        padding: '1rem',
-                        borderRadius: '12px',
+                        width: '64px',
+                        height: '64px',
+                        borderRadius: '50%',
                         background: 'var(--success)',
                         border: 'none',
                         color: 'white',
-                        fontWeight: 'bold',
-                        cursor: 'pointer',
-                        boxShadow: '0 4px 15px rgba(16, 185, 129, 0.4)'
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        cursor: number ? 'pointer' : 'not-allowed',
+                        opacity: number ? 1 : 0.5,
+                        boxShadow: number ? '0 4px 12px rgba(16, 185, 129, 0.3)' : 'none',
+                        transition: 'all 0.2s'
                     }}
                 >
-                    Call
+                    <Phone size={24} fill="white" />
                 </button>
             </div>
         </div>

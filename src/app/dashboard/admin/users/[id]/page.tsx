@@ -12,18 +12,19 @@ import {
     CheckCircle
 } from 'lucide-react';
 
-export default function EmployeeProfilePage({ params }: { params: { id: string } }) {
+export default function EmployeeProfilePage({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = React.use(params);
     const [employee, setEmployee] = useState<any>(null);
     const [loading, setLoading] = useState(true);
     const [uploading, setUploading] = useState(false);
 
     useEffect(() => {
         loadData();
-    }, [params.id]);
+    }, [id]);
 
     async function loadData() {
         try {
-            const data = await getUser(params.id);
+            const data = await getUser(id);
             setEmployee(data);
         } catch (error) {
             console.error(error);
@@ -36,7 +37,7 @@ export default function EmployeeProfilePage({ params }: { params: { id: string }
         setUploading(true);
         const formData = new FormData();
         formData.append('type', type);
-        await uploadEmployeeDocument(params.id, formData);
+        await uploadEmployeeDocument(id, formData);
         await loadData();
         setUploading(false);
     }

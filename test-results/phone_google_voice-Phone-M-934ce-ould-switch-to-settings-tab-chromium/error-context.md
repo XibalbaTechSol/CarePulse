@@ -1,0 +1,118 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e1]:
+  - generic [ref=e2]:
+    - complementary [ref=e3]:
+      - generic [ref=e4]:
+        - generic [ref=e5]:
+          - img "CarePulse Logo" [ref=e7]
+          - generic [ref=e8]:
+            - heading "CarePulse" [level=1] [ref=e9]
+            - paragraph [ref=e10]: Agency Console
+        - button [ref=e11] [cursor=pointer]:
+          - img [ref=e12]
+      - generic [ref=e14]:
+        - link "Dashboard" [ref=e15] [cursor=pointer]:
+          - /url: /dashboard
+          - img [ref=e16]
+          - generic [ref=e21]: Dashboard
+        - link "Clients" [ref=e22] [cursor=pointer]:
+          - /url: /dashboard/crm
+          - img [ref=e23]
+          - generic [ref=e28]: Clients
+        - link "Employees" [ref=e29] [cursor=pointer]:
+          - /url: /dashboard/admin
+          - img [ref=e30]
+          - generic [ref=e35]: Employees
+        - link "Phone System" [ref=e36] [cursor=pointer]:
+          - /url: /dashboard/phone
+          - img [ref=e37]
+          - generic [ref=e39]: Phone System
+        - link "Fax" [ref=e40] [cursor=pointer]:
+          - /url: /dashboard/fax
+          - img [ref=e41]
+          - generic [ref=e45]: Fax
+        - link "Billing / Claims" [ref=e46] [cursor=pointer]:
+          - /url: /dashboard/billing
+          - img [ref=e47]
+          - generic [ref=e50]: Billing / Claims
+        - link "Payroll" [ref=e51] [cursor=pointer]:
+          - /url: /dashboard/payroll
+          - img [ref=e52]
+          - generic [ref=e55]: Payroll
+        - link "Workflows" [ref=e56] [cursor=pointer]:
+          - /url: /dashboard/workflows
+          - img [ref=e57]
+          - generic [ref=e61]: Workflows
+        - link "Forms" [ref=e62] [cursor=pointer]:
+          - /url: /dashboard/forms
+          - img [ref=e63]
+          - generic [ref=e66]: Forms
+        - link "EVV" [ref=e67] [cursor=pointer]:
+          - /url: /dashboard/evv
+          - img [ref=e68]
+          - generic [ref=e71]: EVV
+        - generic [ref=e72]:
+          - paragraph [ref=e73]: Intelligence
+          - link "AI Insights" [ref=e74] [cursor=pointer]:
+            - /url: /dashboard/ai
+            - img [ref=e75]
+            - generic [ref=e83]: AI Insights
+      - button "Switch to dark mode" [ref=e85] [cursor=pointer]:
+        - img [ref=e86]
+      - generic [ref=e89]:
+        - generic [ref=e91]: US
+        - generic [ref=e93]:
+          - paragraph [ref=e94]: User Demo
+          - paragraph [ref=e95]: Admin
+    - main [ref=e96]:
+      - generic [ref=e98]:
+        - generic [ref=e99]:
+          - img [ref=e102]
+          - generic [ref=e104]:
+            - button "Calls" [ref=e105] [cursor=pointer]:
+              - img [ref=e107]
+            - button "Messages" [ref=e109] [cursor=pointer]:
+              - img [ref=e111]
+            - button "Voicemail" [ref=e113] [cursor=pointer]:
+              - img [ref=e115]
+            - button "Starred" [ref=e118] [cursor=pointer]:
+              - img [ref=e120]
+          - button "Settings" [active] [ref=e123] [cursor=pointer]:
+            - img [ref=e125]
+        - generic [ref=e128]:
+          - generic [ref=e129]:
+            - generic [ref=e130]:
+              - img [ref=e131]
+              - textbox "Search Google Voice" [ref=e134]
+            - generic [ref=e135]:
+              - generic [ref=e136]:
+                - generic [ref=e137]: ●
+                - generic [ref=e138]: Inactive
+              - button "Upgrade" [ref=e139] [cursor=pointer]
+          - generic [ref=e141]:
+            - heading "Settings" [level=2] [ref=e142]
+            - generic [ref=e143]:
+              - heading "📞 SIP Phone Configuration" [level=3] [ref=e144]
+              - generic [ref=e145]:
+                - generic [ref=e146]:
+                  - generic [ref=e147]: SIP Domain
+                  - textbox "sip.nextiva.com" [ref=e148]
+                - generic [ref=e149]:
+                  - generic [ref=e150]: WebSocket URL (WSS)
+                  - textbox "wss://sip.nextiva.com:8089/ws" [ref=e151]
+                - generic [ref=e152]:
+                  - generic [ref=e153]:
+                    - generic [ref=e154]: SIP Username
+                    - textbox [ref=e155]
+                  - generic [ref=e156]:
+                    - generic [ref=e157]: SIP Password
+                    - textbox [ref=e158]
+                - button "Save Configuration" [ref=e159] [cursor=pointer]
+  - button [ref=e160] [cursor=pointer]:
+    - img [ref=e161]
+  - button "Open Next.js Dev Tools" [ref=e168] [cursor=pointer]:
+    - img [ref=e169]
+  - alert [ref=e172]
+```

@@ -1,6 +1,6 @@
 'use server';
 
-import { prisma } from '@/lib/db';
+import { sql } from '@/lib/db-sql';
 import { getCurrentUser } from '@/lib/auth';
 
 export async function getPayrollData(startDate?: Date, endDate?: Date) {
@@ -18,26 +18,29 @@ export async function getPayrollData(startDate?: Date, endDate?: Date) {
         lastDay.setHours(23, 59, 59, 999);
     }
 
-    const caregivers = await prisma.user.findMany({
-        where: {
-            organizationId: user.organizationId,
-            role: { in: ['CAREGIVER', 'NURSE'] }
-        },
-        include: {
-            caregiverVisits: {
-                where: {
-                    status: { in: ['COMPLETED', 'VERIFIED', 'SUBMITTED'] },
-                    startDateTime: { gte: firstDay, lte: lastDay }
-                }
-            }
-        }
-    });
+    const startIso = firstDay.toISOString();
+    const endIso = lastDay.toISOString();
+
+    const caregivers = sql.all<any>(`
+        SELECT * FROM User 
+        WHERE organizationId = ? 
+        AND role IN ('CAREGIVER', 'NURSE')
+    `, [user.organizationId]);
 
     const payrollData = caregivers.map(cg => {
+        // Manually fetch visits for this caregiver in range
+        const visits = sql.all<any>(`
+            SELECT * FROM Visit 
+            WHERE caregiverId = ? 
+            AND status IN ('COMPLETED', 'VERIFIED', 'SUBMITTED') 
+            AND startDateTime >= ? 
+            AND startDateTime <= ?
+        `, [cg.id, startIso, endIso]);
+
         let totalMinutes = 0;
-        cg.caregiverVisits.forEach(visit => {
+        visits.forEach(visit => {
             if (visit.startDateTime && visit.endDateTime) {
-                totalMinutes += (visit.endDateTime.getTime() - visit.startDateTime.getTime()) / 60000;
+                totalMinutes += (new Date(visit.endDateTime).getTime() - new Date(visit.startDateTime).getTime()) / 60000;
             }
         });
 
@@ -58,7 +61,7 @@ export async function getPayrollData(startDate?: Date, endDate?: Date) {
             totalPay: parseFloat(totalPay.toFixed(2)),
             isNearOvertime: totalHours >= 38,
             isOvertime: totalHours >= 40,
-            visitsCount: cg.caregiverVisits.length
+            visitsCount: visits.length
         };
     });
 

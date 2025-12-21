@@ -1,7 +1,8 @@
 'use server';
 
-import { prisma } from '@/lib/db';
+import { sql } from '@/lib/db-sql';
 import { calculateWisconsinUnits } from './evv';
+import { getCurrentUser } from '@/lib/auth';
 
 export interface BillingError {
     visitId: string;
@@ -18,10 +19,9 @@ export interface BillingError {
  * 3. Unauthorized Overtime (Exceeding Auth Units)
  */
 export async function validateVisit(visitId: string): Promise<BillingError[]> {
-    const visit = await prisma.visit.findUnique({
-        where: { id: visitId },
-        include: { client: true, caregiver: true }
-    });
+    const visit = sql.get<any>(`
+        SELECT * FROM Visit WHERE id = ?
+    `, [visitId]);
 
     if (!visit) return [];
 
@@ -39,17 +39,15 @@ export async function validateVisit(visitId: string): Promise<BillingError[]> {
 
     // Rule 2: Overlapping Shifts (Same Caregiver)
     if (visit.startDateTime && visit.endDateTime) {
-        const overlappingByCaregiver = await prisma.visit.findFirst({
-            where: {
-                id: { not: visitId },
-                caregiverId: visit.caregiverId,
-                status: { in: ['IN_PROGRESS', 'COMPLETED', 'VERIFIED', 'SUBMITTED'] },
-                AND: [
-                    { startDateTime: { lt: visit.endDateTime } },
-                    { endDateTime: { gt: visit.startDateTime } }
-                ]
-            }
-        });
+        const overlappingByCaregiver = sql.get<any>(`
+            SELECT id FROM Visit 
+            WHERE id != ? 
+            AND caregiverId = ? 
+            AND status IN ('IN_PROGRESS', 'COMPLETED', 'VERIFIED', 'SUBMITTED') 
+            AND startDateTime < ? 
+            AND endDateTime > ?
+            LIMIT 1
+        `, [visitId, visit.caregiverId, visit.endDateTime, visit.startDateTime]);
 
         if (overlappingByCaregiver) {
             errors.push({
@@ -61,17 +59,15 @@ export async function validateVisit(visitId: string): Promise<BillingError[]> {
         }
 
         // Rule 3: Overlapping Shifts (Same Client)
-        const overlappingByClient = await prisma.visit.findFirst({
-            where: {
-                id: { not: visitId },
-                clientId: visit.clientId,
-                status: { in: ['IN_PROGRESS', 'COMPLETED', 'VERIFIED', 'SUBMITTED'] },
-                AND: [
-                    { startDateTime: { lt: visit.endDateTime } },
-                    { endDateTime: { gt: visit.startDateTime } }
-                ]
-            }
-        });
+        const overlappingByClient = sql.get<any>(`
+            SELECT id FROM Visit 
+            WHERE id != ? 
+            AND clientId = ? 
+            AND status IN ('IN_PROGRESS', 'COMPLETED', 'VERIFIED', 'SUBMITTED') 
+            AND startDateTime < ? 
+            AND endDateTime > ?
+            LIMIT 1
+        `, [visitId, visit.clientId, visit.endDateTime, visit.startDateTime]);
 
         if (overlappingByClient) {
             errors.push({
@@ -84,15 +80,15 @@ export async function validateVisit(visitId: string): Promise<BillingError[]> {
     }
 
     // Rule 4: Authorization Check
-    const auth = await prisma.authorization.findFirst({
-        where: {
-            contactId: visit.clientId,
-            serviceCode: visit.serviceType,
-            status: 'ACTIVE',
-            startDate: { lte: visit.startDateTime },
-            endDate: { gte: visit.startDateTime }
-        }
-    });
+    const auth = sql.get<any>(`
+        SELECT * FROM Authorization 
+        WHERE contactId = ? 
+        AND serviceCode = ? 
+        AND status = 'ACTIVE' 
+        AND startDate <= ? 
+        AND endDate >= ?
+        LIMIT 1
+    `, [visit.clientId, visit.serviceType, visit.startDateTime, visit.startDateTime]);
 
     if (!auth) {
         errors.push({
@@ -102,7 +98,7 @@ export async function validateVisit(visitId: string): Promise<BillingError[]> {
             severity: 'ERROR'
         });
     } else {
-        const units = visit.endDateTime ? await calculateWisconsinUnits(visit.startDateTime!, visit.endDateTime) : 0;
+        const units = visit.endDateTime ? await calculateWisconsinUnits(new Date(visit.startDateTime), new Date(visit.endDateTime)) : 0;
         if (auth.usedUnits + units > auth.totalUnits) {
             errors.push({
                 visitId,
@@ -121,20 +117,21 @@ export async function validateVisit(visitId: string): Promise<BillingError[]> {
  * Flagged RED on the dashboard.
  */
 export async function getVisitsRequiringAttention() {
-    const visits = await prisma.visit.findMany({
-        where: {
-            status: { in: ['COMPLETED', 'VERIFIED'] }
-        },
-        include: {
-            client: true,
-            caregiver: true
-        },
-        take: 50,
-        orderBy: { updatedAt: 'desc' }
-    });
+    const visits = sql.all<any>(`
+        SELECT * FROM Visit 
+        WHERE status IN ('COMPLETED', 'VERIFIED') 
+        ORDER BY updatedAt DESC 
+        LIMIT 50
+    `);
 
     const flagged = [];
     for (const visit of visits) {
+        // Hydrate relations manually if needed
+        const client = sql.get(`SELECT * FROM Contact WHERE id = ?`, [visit.clientId]);
+        const caregiver = sql.get(`SELECT * FROM User WHERE id = ?`, [visit.caregiverId]);
+        visit.client = client;
+        visit.caregiver = caregiver;
+
         const errors = await validateVisit(visit.id);
         if (errors.length > 0) {
             flagged.push({
@@ -147,23 +144,23 @@ export async function getVisitsRequiringAttention() {
     return flagged;
 }
 
-import { getCurrentUser } from '@/lib/auth';
-
 export async function getClaims() {
     const user = await getCurrentUser();
     if (!user || !user.organizationId) return { success: false, error: 'Unauthorized' };
 
     try {
-        const claims = await prisma.claim.findMany({
-            where: { organizationId: user.organizationId },
-            include: {
-                contact: true,
-                organization: true,
-            },
-            orderBy: {
-                updatedAt: 'desc',
-            }
-        });
+        const claims = sql.all<any>(`
+            SELECT * FROM Claim 
+            WHERE organizationId = ? 
+            ORDER BY updatedAt DESC
+        `, [user.organizationId]);
+
+        // Hydrate
+        for (const claim of claims) {
+            claim.contact = sql.get(`SELECT * FROM Contact WHERE id = ?`, [claim.contactId]);
+            claim.organization = sql.get(`SELECT * FROM Organization WHERE id = ?`, [claim.organizationId]);
+        }
+
         return { success: true, data: claims };
     } catch (error) {
         console.error('Error fetching claims:', error);
@@ -176,16 +173,17 @@ export async function getInvoices() {
     if (!user || !user.organizationId) return { success: false, error: 'Unauthorized' };
 
     try {
-        const invoices = await prisma.invoice.findMany({
-            where: { organizationId: user.organizationId },
-            include: {
-                contact: true,
-                items: true,
-            },
-            orderBy: {
-                date: 'desc',
-            }
-        });
+        const invoices = sql.all<any>(`
+            SELECT * FROM Invoice 
+            WHERE organizationId = ? 
+            ORDER BY date DESC
+        `, [user.organizationId]);
+
+        for (const inv of invoices) {
+            inv.contact = sql.get(`SELECT * FROM Contact WHERE id = ?`, [inv.contactId]);
+            inv.items = sql.all(`SELECT * FROM InvoiceItem WHERE invoiceId = ?`, [inv.id]);
+        }
+
         return { success: true, data: invoices };
     } catch (error) {
         console.error('Error fetching invoices:', error);
@@ -198,17 +196,12 @@ export async function getBillingAnalytics() {
     if (!user || !user.organizationId) return { success: false, error: 'Unauthorized' };
 
     try {
-        const totalReceivables = await prisma.invoice.aggregate({
-            _sum: {
-                totalAmount: true,
-            },
-            where: {
-                organizationId: user.organizationId,
-                status: {
-                    not: 'PAID'
-                }
-            }
-        });
+        const result = sql.get<any>(`
+            SELECT SUM(totalAmount) as total 
+            FROM Invoice 
+            WHERE organizationId = ? 
+            AND status != 'PAID'
+        `, [user.organizationId]);
 
         // Mock data for specific payer breakdown until we have enough real data
         const payerBreakdown = [
@@ -220,7 +213,7 @@ export async function getBillingAnalytics() {
         return {
             success: true,
             data: {
-                totalReceivables: totalReceivables._sum.totalAmount || 0,
+                totalReceivables: result?.total || 0,
                 payerBreakdown
             }
         };
@@ -235,14 +228,13 @@ export async function generateBatch() {
     if (!user || !user.organizationId) return { success: false, error: 'Unauthorized' };
 
     try {
-        // Find all DRAFT claims and update them to SUBMITTED
-        // In a real EDI system, this would generate an 837P file string.
-        const updated = await prisma.claim.updateMany({
-            where: { organizationId: user.organizationId, status: 'DRAFT' },
-            data: { status: 'SUBMITTED', updatedAt: new Date() }
-        });
+        const result = sql.run(`
+            UPDATE Claim 
+            SET status = 'SUBMITTED', updatedAt = ? 
+            WHERE organizationId = ? AND status = 'DRAFT'
+        `, [sql.now(), user.organizationId]);
 
-        return { success: true, count: updated.count, message: `Successfully batched ${updated.count} claims.` };
+        return { success: true, count: result.changes, message: `Successfully batched ${result.changes} claims.` };
     } catch (error) {
         console.error('Error generating batch:', error);
         return { success: false, error: 'Failed to generate batch' };
@@ -254,42 +246,42 @@ export async function createClaimsFromVisits() {
     if (!user || !user.organizationId) return { success: false, error: 'Unauthorized' };
 
     try {
-        const verifiedVisits = await prisma.visit.findMany({
-            where: {
-                organizationId: user.organizationId,
-                status: 'VERIFIED',
-                claimId: null
-            },
-            include: { client: true }
-        });
+        const verifiedVisits = sql.all<any>(`
+            SELECT * FROM Visit 
+            WHERE organizationId = ? 
+            AND status = 'VERIFIED' 
+            AND claimId IS NULL
+        `, [user.organizationId]);
 
         let count = 0;
         for (const visit of verifiedVisits) {
-            // Simplified logic: 1 Visit = 1 Claim for now
-            // Ensure startDateTime is not null (it shouldn't be for VERIFIED)
             if (!visit.startDateTime) continue;
 
-            const units = visit.endDateTime ? await calculateWisconsinUnits(visit.startDateTime, visit.endDateTime) : 0;
+            const units = await calculateWisconsinUnits(new Date(visit.startDateTime), new Date(visit.endDateTime || visit.startDateTime));
             const rate = 15.00; // Mock rate per unit
             const total = units * rate;
+            const claimId = sql.id();
+            const now = sql.now();
 
-            const claim = await prisma.claim.create({
-                data: {
-                    claimId: `CLM-${Date.now()}-${visit.id.substring(0, 4)}`,
-                    organizationId: user.organizationId,
-                    contactId: visit.clientId,
-                    status: 'DRAFT',
-                    totalBilled: total,
-                    serviceDateStart: visit.startDateTime,
-                    serviceDateEnd: visit.endDateTime || visit.startDateTime,
-                    payerName: 'Medicaid - ForwardHealth', // Default for now
-                }
-            });
+            sql.run(`
+                INSERT INTO Claim (id, claimId, organizationId, contactId, status, totalBilled, diagnosisCodes, serviceDateStart, serviceDateEnd, payerName, createdAt, updatedAt)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            `, [
+                claimId,
+                `CLM-${Date.now()}-${visit.id.substring(0, 4)}`,
+                user.organizationId,
+                visit.clientId,
+                'DRAFT',
+                total,
+                JSON.stringify([]),
+                visit.startDateTime,
+                visit.endDateTime || visit.startDateTime,
+                'Medicaid - ForwardHealth',
+                now,
+                now
+            ]);
 
-            await prisma.visit.update({
-                where: { id: visit.id },
-                data: { claimId: claim.id }
-            });
+            sql.run(`UPDATE Visit SET claimId = ? WHERE id = ?`, [claimId, visit.id]);
             count++;
         }
         return { success: true, count, message: `Created ${count} claims from verified visits.` };
