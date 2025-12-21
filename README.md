@@ -143,5 +143,20 @@ For detailed information on each module, refer to the README files in their resp
 - [Storage Module](./src/app/dashboard/storage/README.md)
 - [Admin Module](./src/app/dashboard/admin/README.md)
 
+## 🤝 Contributing
+
+We welcome contributions to **CarePulse**! To ensure a smooth workflow, please follow these guidelines:
+
+1. **Target Branch**: All development work and feature contributions should be targeted at the `dev` branch. The `main` branch is reserved for stable, production-ready releases.
+2. **Fork & Clone**: Fork the repository to your own GitHub account and clone it locally.
+3. **Create a Feature Branch**:
+   ```bash
+   git checkout dev
+   git pull origin dev
+   git checkout -b feature/your-feature-name
+   ```
+4. **Commit Changes**: Use descriptive commit messages following the [Conventional Commits](https://www.conventionalcommits.org/) specification.
+5. **Submit a Pull Request**: Open a PR from your feature branch to the `dev` branch of the main repository. Provide a clear description of your changes and any relevant issue numbers.
+
 ---
 Developed with a focus on **Compliance**, **Usability**, and **Performance**.
