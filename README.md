@@ -50,6 +50,35 @@ All external communications are protected using industry-standard encryption pro
 The **Audit Vault** provides a tamper-evident log of clinical and operational activities, supporting Wisconsin T1019 audit requirements and general regulatory compliance.
 
 
+### 🧠 CarePulse AI: Clinical & Operational Intelligence
+
+CarePulse isn't just a dashboard; it's an intelligent partner powered by the **Kiwi Thinking Model**. Our AI integration is specifically engineered to solve the most painful challenges in home health operations.
+
+#### 🛡️ Audit-Ready Intelligence (T1019 & Beyond)
+The AI assistant has direct access to the **Audit Vault** and clinical database, providing a "Pre-Audit" reasoning layer:
+- **Audit Verification**: Automatically checks visits against active authorizations and Plan of Care (485) tasks.
+- **Compliance Gap Detection**: Identifies missing clinical signatures, task discrepancies, or EVV exceptions *before* an auditor arrives.
+- **Regulatory Retrieval**: Uses RAG to instantly cite Wisconsin DHS regulations and agency-specific policies during documentation.
+
+#### 🚫 Proactive Error Prevention
+By analyzing patterns across the organization, the AI prevents costly clinical and administrative mistakes:
+- **Real-Time Documentation Analysis**: Flags inconsistencies between nursing assessments and daily caregiver task logs.
+- **Authorization Monitoring**: Alerts administrators when care usage deviates from approved Medicaid limits, preventing unbillable "over-servicing."
+- **Data Integrity**: Detects potential fraudulent patterns in EVV data through anomaly detection in clock-in/out coordinates.
+
+#### 💰 Maximizing Agency Profitability
+CarePulse AI identifies hidden opportunities to optimize resources and increase revenue:
+- **Billable Activity Recovery**: Surfaces unbilled coordination time and supplies that often leak from agency revenue streams.
+- **Visit Optimization**: Analyzes travel patterns and staff availability to suggest the most cost-effective scheduling routes.
+- **Staff Retention Insights**: Monitors caregiver exception trends and workload to predict and prevent burnout, reducing high turnover costs.
+
+#### 🎙️ Interactive AI Guidance (Audio Orb)
+Experience natural, context-aware assistance through our **volume-responsive Audio Orb**:
+- **Eyes-Free Interaction**: Nurses can query client history or organization protocols hands-free during clinical evaluations.
+- **Visual Feedback**: Real-time frequency analysis provides a tactile, "living" presence for the AI, ensuring users know exactly when the model is processing deep reasoning.
+
+---
+
 ## 🛠️ Tech Stack
 
 - **Framework**: [Next.js 16](https://nextjs.org/) (App Router)
