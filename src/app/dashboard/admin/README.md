@@ -1,21 +1,38 @@
-# Admin & Settings: Agency Governance
+# Admin Dashboard Module
 
-Tools for managing organization-wide configurations, users, and module access.
+The Admin Dashboard provides administrative capabilities for the CarePulse platform, focusing on extensive resource management, credentials verification, and revenue tracking.
 
-## ✨ Key Features
+## Sub-Modules
 
-- **User Management**: Add, remove, and assign roles (Nurse, Admin, Office) to staff.
-- **Organization Config**: Set agency domains and global settings.
-- **Module Control**: Toggle modules (CRM, EVV, Fax, etc.) on or off for the organization.
-- **White-labeling**: Update logos, brand colors, and localized content.
+### 1. Revenue Cycle Management (RCM)
+- **Path**: `/dashboard/admin/rcm`
+- **Key Features**:
+  - Validates claim status (Paid, Denied, Pending).
+  - Visualization of revenue trends.
+  - Tracking of denial rates and average days to payment.
 
-## ⚙️ Configuration
+### 2. Supply Chain & Inventory
+- **Path**: `/dashboard/admin/inventory`
+- **Key Features**:
+  - Stock level monitoring (Low Stock alerts).
+  - Direct reordering capability.
+  - Value summary of current inventory.
 
-- Most settings are managed via `Dashboard > Settings`.
-- Role-based permissions are enforced at the server action level.
+### 3. Credentialing
+- **Path**: `/dashboard/admin/credentialing`
+- **Key Features**:
+  - Provider profile management.
+  - Alerts for expiring credentials (DEA, Medical License).
+  - Status tracking (Verified, Expiring Soon).
 
-## 📂 Architecture
+### 4. Analytics
+- **Path**: `/dashboard/admin/analytics`
+- **Key Features**:
+  - Quality performance metrics (Readmissions, Patient Satisfaction).
+  - HEDIS measure tracking.
+  - Visual trends for key healthcare indicators.
 
-- **Admin Page**: `src/app/dashboard/admin/page.tsx`
-- **Settings Page**: `src/app/dashboard/settings/page.tsx`
-- **Models**: `Organization`, `User`, `ModuleConfig` in `schema.prisma`.
+## Tech Stack
+- **UI Components**: `@/components/nord` (Card, Badge, Button), `recharts` for visualization.
+- **Icons**: `lucide-react`.
+- **Data Fetching**: Server actions located in `@/lib/actions/administrative`.

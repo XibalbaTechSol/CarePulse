@@ -1,0 +1,211 @@
+___ ____ _  _ ___ _  _ ____ _       ____ ____ ____ _  _ ____ 
+ |  |___  \/   |  |  | |__| |    __ [__  |___ |__/ |  | |___ 
+ |  |___ _/\_  |  |__| |  | |___    ___] |___ |  \  \/  |___ v1.1.3
+
+Serving '/home/xibalbasolutions/CAREPULSE/toad/src/toad/cli.py run --agent 
+medical --port 8000 --host localhost' on http://localhost:8000
+
+Press Ctrl+C to quit
+INFO     127.0.0.1 [25/Dec/2025:21:37:09 -0600] "GET / HTTP/1.1" 200 4464       
+         "http://localhost:3000/" "Mozilla/5.0 (X11; Ubuntu; Linux x86_64;      
+         rv:146.0) Gecko/20100101 Firefox/146.0"                                
+INFO     127.0.0.1 [25/Dec/2025:21:37:09 -0600] "GET /static/css/xterm.css      
+         HTTP/1.1" 200 237 "http://localhost:8000/" "Mozilla/5.0 (X11; Ubuntu;  
+         Linux x86_64; rv:146.0) Gecko/20100101 Firefox/146.0"                  
+INFO     127.0.0.1 [25/Dec/2025:21:37:09 -0600] "GET /static/js/textual.js      
+         HTTP/1.1" 304 180 "http://localhost:8000/" "Mozilla/5.0 (X11; Ubuntu;  
+         Linux x86_64; rv:146.0) Gecko/20100101 Firefox/146.0"                  
+INFO     127.0.0.1 [25/Dec/2025:21:37:09 -0600] "GET                            
+         /static/images/background.png HTTP/1.1" 200 239                        
+         "http://localhost:8000/" "Mozilla/5.0 (X11; Ubuntu; Linux x86_64;      
+         rv:146.0) Gecko/20100101 Firefox/146.0"                                
+ERROR    Application failed to start                                            
+/home/xibalbasolutions/CAREPULSE/toad/src/toad/cli.py: 1: import: not found
+/home/xibalbasolutions/CAREPULSE/toad/src/toad/cli.py: 3: import: not found
+/home/xibalbasolutions/CAREPULSE/toad/src/toad/cli.py: 4: from: not found
+/home/xibalbasolutions/CAREPULSE/toad/src/toad/cli.py: 5: from: not found
+/home/xibalbasolutions/CAREPULSE/toad/src/toad/cli.py: 8: Syntax error: "(" unexpected
+/home/xibalbasolutions/CAREPULSE/toad/src/toad/cli.py: 1: import: not found
+/home/xibalbasolutions/CAREPULSE/toad/src/toad/cli.py: 3: import: not found
+/home/xibalbasolutions/CAREPULSE/toad/src/toad/cli.py: 4: from: not found
+/home/xibalbasolutions/CAREPULSE/toad/src/toad/cli.py: 5: from: not found
+/home/xibalbasolutions/CAREPULSE/toad/src/toad/cli.py: 8: Syntax error: "(" unexpected
+INFO     127.0.0.1 [25/Dec/2025:21:37:10 -0600] "GET /ws?width=184&height=30    
+         HTTP/1.1" 101 0 "-" "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:146.0) 
+         Gecko/20100101 Firefox/146.0"                                          
+INFO     127.0.0.1 [25/Dec/2025:21:39:26 -0600] "GET / HTTP/1.1" 200 4464       
+         "http://localhost:3000/" "Mozilla/5.0 (X11; Ubuntu; Linux x86_64;      
+         rv:146.0) Gecko/20100101 Firefox/146.0"                                
+INFO     127.0.0.1 [25/Dec/2025:21:39:26 -0600] "GET /static/css/xterm.css      
+         HTTP/1.1" 200 0 "http://localhost:8000/" "Mozilla/5.0 (X11; Ubuntu;    
+         Linux x86_64; rv:146.0) Gecko/20100101 Firefox/146.0"                  
+INFO     127.0.0.1 [25/Dec/2025:21:39:26 -0600] "GET                            
+         /static/images/background.png HTTP/1.1" 200 239                        
+         "http://localhost:8000/" "Mozilla/5.0 (X11; Ubuntu; Linux x86_64;      
+         rv:146.0) Gecko/20100101 Firefox/146.0"                                
+ERROR    Application failed to start                                            
+/home/xibalbasolutions/CAREPULSE/toad/src/toad/cli.py: 1: import: not found
+/home/xibalbasolutions/CAREPULSE/toad/src/toad/cli.py: 3: import: not found
+/home/xibalbasolutions/CAREPULSE/toad/src/toad/cli.py: 4: from: not found
+/home/xibalbasolutions/CAREPULSE/toad/src/toad/cli.py: 5: from: not found
+/home/xibalbasolutions/CAREPULSE/toad/src/toad/cli.py: 8: Syntax error: "(" unexpected
+/home/xibalbasolutions/CAREPULSE/toad/src/toad/cli.py: 1: import: not found
+/home/xibalbasolutions/CAREPULSE/toad/src/toad/cli.py: 3: import: not found
+/home/xibalbasolutions/CAREPULSE/toad/src/toad/cli.py: 4: from: not found
+/home/xibalbasolutions/CAREPULSE/toad/src/toad/cli.py: 5: from: not found
+/home/xibalbasolutions/CAREPULSE/toad/src/toad/cli.py: 8: Syntax error: "(" unexpected
+INFO     127.0.0.1 [25/Dec/2025:21:39:26 -0600] "GET /ws?width=184&height=30    
+         HTTP/1.1" 101 0 "-" "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:146.0) 
+         Gecko/20100101 Firefox/146.0"                                          
+INFO     127.0.0.1 [25/Dec/2025:21:39:29 -0600] "GET / HTTP/1.1" 200 4464       
+         "http://localhost:3000/" "Mozilla/5.0 (X11; Ubuntu; Linux x86_64;      
+         rv:146.0) Gecko/20100101 Firefox/146.0"                                
+ERROR    Application failed to start                                            
+/home/xibalbasolutions/CAREPULSE/toad/src/toad/cli.py: 1: import: not found
+/home/xibalbasolutions/CAREPULSE/toad/src/toad/cli.py: 3: import: not found
+/home/xibalbasolutions/CAREPULSE/toad/src/toad/cli.py: 4: from: not found
+/home/xibalbasolutions/CAREPULSE/toad/src/toad/cli.py: 5: from: not found
+/home/xibalbasolutions/CAREPULSE/toad/src/toad/cli.py: 8: Syntax error: "(" unexpected
+/home/xibalbasolutions/CAREPULSE/toad/src/toad/cli.py: 1: import: not found
+/home/xibalbasolutions/CAREPULSE/toad/src/toad/cli.py: 3: import: not found
+/home/xibalbasolutions/CAREPULSE/toad/src/toad/cli.py: 4: from: not found
+/home/xibalbasolutions/CAREPULSE/toad/src/toad/cli.py: 5: from: not found
+/home/xibalbasolutions/CAREPULSE/toad/src/toad/cli.py: 8: Syntax error: "(" unexpected
+INFO     127.0.0.1 [25/Dec/2025:21:39:29 -0600] "GET /ws?width=184&height=30    
+         HTTP/1.1" 101 0 "-" "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:146.0) 
+         Gecko/20100101 Firefox/146.0"                                          
+INFO     127.0.0.1 [25/Dec/2025:21:39:29 -0600] "GET / HTTP/1.1" 200 4464       
+         "http://localhost:3000/" "Mozilla/5.0 (X11; Ubuntu; Linux x86_64;      
+         rv:146.0) Gecko/20100101 Firefox/146.0"                                
+ERROR    Application failed to start                                            
+INFO     127.0.0.1 [25/Dec/2025:21:39:30 -0600] "GET / HTTP/1.1" 200 4464       
+         "http://localhost:3000/" "Mozilla/5.0 (X11; Ubuntu; Linux x86_64;      
+         rv:146.0) Gecko/20100101 Firefox/146.0"                                
+ERROR    Application failed to start                                            
+/home/xibalbasolutions/CAREPULSE/toad/src/toad/cli.py: 1: import: not found
+/home/xibalbasolutions/CAREPULSE/toad/src/toad/cli.py: 3: import: not found
+/home/xibalbasolutions/CAREPULSE/toad/src/toad/cli.py: 4: from: not found
+/home/xibalbasolutions/CAREPULSE/toad/src/toad/cli.py: 5: from: not found
+/home/xibalbasolutions/CAREPULSE/toad/src/toad/cli.py: 8: Syntax error: "(" unexpected
+/home/xibalbasolutions/CAREPULSE/toad/src/toad/cli.py: 1: import: not found
+/home/xibalbasolutions/CAREPULSE/toad/src/toad/cli.py: 3: import: not found
+/home/xibalbasolutions/CAREPULSE/toad/src/toad/cli.py: 4: from: not found
+/home/xibalbasolutions/CAREPULSE/toad/src/toad/cli.py: 5: from: not found
+/home/xibalbasolutions/CAREPULSE/toad/src/toad/cli.py: 8: Syntax error: "(" unexpected
+INFO     127.0.0.1 [25/Dec/2025:21:39:30 -0600] "GET /ws?width=184&height=30    
+         HTTP/1.1" 101 0 "-" "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:146.0) 
+         Gecko/20100101 Firefox/146.0"                                          
+INFO     127.0.0.1 [25/Dec/2025:21:39:30 -0600] "GET / HTTP/1.1" 200 4464       
+         "http://localhost:3000/" "Mozilla/5.0 (X11; Ubuntu; Linux x86_64;      
+         rv:146.0) Gecko/20100101 Firefox/146.0"                                
+ERROR    Application failed to start                                            
+INFO     127.0.0.1 [25/Dec/2025:21:39:30 -0600] "GET / HTTP/1.1" 200 4464       
+         "http://localhost:3000/" "Mozilla/5.0 (X11; Ubuntu; Linux x86_64;      
+         rv:146.0) Gecko/20100101 Firefox/146.0"                                
+ERROR    Application failed to start                                            
+/home/xibalbasolutions/CAREPULSE/toad/src/toad/cli.py: 1: import: not found
+/home/xibalbasolutions/CAREPULSE/toad/src/toad/cli.py: 3: import: not found
+/home/xibalbasolutions/CAREPULSE/toad/src/toad/cli.py: 4: from: not found
+/home/xibalbasolutions/CAREPULSE/toad/src/toad/cli.py: 5: from: not found
+/home/xibalbasolutions/CAREPULSE/toad/src/toad/cli.py: 8: Syntax error: "(" unexpected
+/home/xibalbasolutions/CAREPULSE/toad/src/toad/cli.py: 1: import: not found
+/home/xibalbasolutions/CAREPULSE/toad/src/toad/cli.py: 3: import: not found
+/home/xibalbasolutions/CAREPULSE/toad/src/toad/cli.py: 4: from: not found
+/home/xibalbasolutions/CAREPULSE/toad/src/toad/cli.py: 5: from: not found
+/home/xibalbasolutions/CAREPULSE/toad/src/toad/cli.py: 8: Syntax error: "(" unexpected
+INFO     127.0.0.1 [25/Dec/2025:21:39:30 -0600] "GET /ws?width=184&height=30    
+         HTTP/1.1" 101 0 "-" "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:146.0) 
+         Gecko/20100101 Firefox/146.0"                                          
+INFO     127.0.0.1 [25/Dec/2025:21:39:30 -0600] "GET / HTTP/1.1" 200 4464       
+         "http://localhost:3000/" "Mozilla/5.0 (X11; Ubuntu; Linux x86_64;      
+         rv:146.0) Gecko/20100101 Firefox/146.0"                                
+ERROR    Application failed to start                                            
+INFO     127.0.0.1 [25/Dec/2025:21:39:31 -0600] "GET / HTTP/1.1" 200 4464       
+         "http://localhost:3000/" "Mozilla/5.0 (X11; Ubuntu; Linux x86_64;      
+         rv:146.0) Gecko/20100101 Firefox/146.0"                                
+ERROR    Application failed to start                                            
+/home/xibalbasolutions/CAREPULSE/toad/src/toad/cli.py: 1: import: not found
+/home/xibalbasolutions/CAREPULSE/toad/src/toad/cli.py: 3: import: not found
+/home/xibalbasolutions/CAREPULSE/toad/src/toad/cli.py: 4: from: not found
+/home/xibalbasolutions/CAREPULSE/toad/src/toad/cli.py: 5: from: not found
+/home/xibalbasolutions/CAREPULSE/toad/src/toad/cli.py: 8: Syntax error: "(" unexpected
+/home/xibalbasolutions/CAREPULSE/toad/src/toad/cli.py: 1: import: not found
+/home/xibalbasolutions/CAREPULSE/toad/src/toad/cli.py: 3: import: not found
+/home/xibalbasolutions/CAREPULSE/toad/src/toad/cli.py: 4: from: not found
+/home/xibalbasolutions/CAREPULSE/toad/src/toad/cli.py: 5: from: not found
+/home/xibalbasolutions/CAREPULSE/toad/src/toad/cli.py: 8: Syntax error: "(" unexpected
+INFO     127.0.0.1 [25/Dec/2025:21:39:31 -0600] "GET /ws?width=184&height=30    
+         HTTP/1.1" 101 0 "-" "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:146.0) 
+         Gecko/20100101 Firefox/146.0"                                          
+INFO     127.0.0.1 [25/Dec/2025:21:39:31 -0600] "GET / HTTP/1.1" 200 4464       
+         "http://localhost:3000/" "Mozilla/5.0 (X11; Ubuntu; Linux x86_64;      
+         rv:146.0) Gecko/20100101 Firefox/146.0"                                
+ERROR    Application failed to start                                            
+/home/xibalbasolutions/CAREPULSE/toad/src/toad/cli.py: 1: import: not found
+/home/xibalbasolutions/CAREPULSE/toad/src/toad/cli.py: 3: import: not found
+/home/xibalbasolutions/CAREPULSE/toad/src/toad/cli.py: 4: from: not found
+/home/xibalbasolutions/CAREPULSE/toad/src/toad/cli.py: 5: from: not found
+/home/xibalbasolutions/CAREPULSE/toad/src/toad/cli.py: 8: Syntax error: "(" unexpected
+/home/xibalbasolutions/CAREPULSE/toad/src/toad/cli.py: 1: import: not found
+/home/xibalbasolutions/CAREPULSE/toad/src/toad/cli.py: 3: import: not found
+/home/xibalbasolutions/CAREPULSE/toad/src/toad/cli.py: 4: from: not found
+/home/xibalbasolutions/CAREPULSE/toad/src/toad/cli.py: 5: from: not found
+/home/xibalbasolutions/CAREPULSE/toad/src/toad/cli.py: 8: Syntax error: "(" unexpected
+INFO     127.0.0.1 [25/Dec/2025:21:39:32 -0600] "GET /ws?width=184&height=30    
+         HTTP/1.1" 101 0 "-" "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:146.0) 
+         Gecko/20100101 Firefox/146.0"                                          
+INFO     127.0.0.1 [25/Dec/2025:21:39:32 -0600] "GET / HTTP/1.1" 200 4464       
+         "http://localhost:3000/" "Mozilla/5.0 (X11; Ubuntu; Linux x86_64;      
+         rv:146.0) Gecko/20100101 Firefox/146.0"                                
+ERROR    Application failed to start                                            
+/home/xibalbasolutions/CAREPULSE/toad/src/toad/cli.py: 1: import: not found
+/home/xibalbasolutions/CAREPULSE/toad/src/toad/cli.py: 3: import: not found
+/home/xibalbasolutions/CAREPULSE/toad/src/toad/cli.py: 4: from: not found
+/home/xibalbasolutions/CAREPULSE/toad/src/toad/cli.py: 5: from: not found
+/home/xibalbasolutions/CAREPULSE/toad/src/toad/cli.py: 8: Syntax error: "(" unexpected
+/home/xibalbasolutions/CAREPULSE/toad/src/toad/cli.py: 1: import: not found
+/home/xibalbasolutions/CAREPULSE/toad/src/toad/cli.py: 3: import: not found
+/home/xibalbasolutions/CAREPULSE/toad/src/toad/cli.py: 4: from: not found
+/home/xibalbasolutions/CAREPULSE/toad/src/toad/cli.py: 5: from: not found
+/home/xibalbasolutions/CAREPULSE/toad/src/toad/cli.py: 8: Syntax error: "(" unexpected
+INFO     127.0.0.1 [25/Dec/2025:21:39:32 -0600] "GET /ws?width=184&height=30    
+         HTTP/1.1" 101 0 "-" "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:146.0) 
+         Gecko/20100101 Firefox/146.0"                                          
+INFO     127.0.0.1 [25/Dec/2025:21:39:32 -0600] "GET / HTTP/1.1" 200 4464       
+         "http://localhost:3000/" "Mozilla/5.0 (X11; Ubuntu; Linux x86_64;      
+         rv:146.0) Gecko/20100101 Firefox/146.0"                                
+ERROR    Application failed to start                                            
+/home/xibalbasolutions/CAREPULSE/toad/src/toad/cli.py: 1: import: not found
+/home/xibalbasolutions/CAREPULSE/toad/src/toad/cli.py: 3: import: not found
+/home/xibalbasolutions/CAREPULSE/toad/src/toad/cli.py: 4: from: not found
+/home/xibalbasolutions/CAREPULSE/toad/src/toad/cli.py: 5: from: not found
+/home/xibalbasolutions/CAREPULSE/toad/src/toad/cli.py: 8: Syntax error: "(" unexpected
+/home/xibalbasolutions/CAREPULSE/toad/src/toad/cli.py: 1: import: not found
+/home/xibalbasolutions/CAREPULSE/toad/src/toad/cli.py: 3: import: not found
+/home/xibalbasolutions/CAREPULSE/toad/src/toad/cli.py: 4: from: not found
+/home/xibalbasolutions/CAREPULSE/toad/src/toad/cli.py: 5: from: not found
+/home/xibalbasolutions/CAREPULSE/toad/src/toad/cli.py: 8: Syntax error: "(" unexpected
+INFO     127.0.0.1 [25/Dec/2025:21:39:32 -0600] "GET /ws?width=184&height=30    
+         HTTP/1.1" 101 0 "-" "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:146.0) 
+         Gecko/20100101 Firefox/146.0"                                          
+INFO     127.0.0.1 [25/Dec/2025:21:39:33 -0600] "GET / HTTP/1.1" 200 4464       
+         "http://localhost:3000/" "Mozilla/5.0 (X11; Ubuntu; Linux x86_64;      
+         rv:146.0) Gecko/20100101 Firefox/146.0"                                
+ERROR    Application failed to start                                            
+/home/xibalbasolutions/CAREPULSE/toad/src/toad/cli.py: 1: import: not found
+/home/xibalbasolutions/CAREPULSE/toad/src/toad/cli.py: 3: import: not found
+/home/xibalbasolutions/CAREPULSE/toad/src/toad/cli.py: 4: from: not found
+/home/xibalbasolutions/CAREPULSE/toad/src/toad/cli.py: 5: from: not found
+/home/xibalbasolutions/CAREPULSE/toad/src/toad/cli.py: 8: Syntax error: "(" unexpected
+/home/xibalbasolutions/CAREPULSE/toad/src/toad/cli.py: 1: import: not found
+/home/xibalbasolutions/CAREPULSE/toad/src/toad/cli.py: 3: import: not found
+/home/xibalbasolutions/CAREPULSE/toad/src/toad/cli.py: 4: from: not found
+/home/xibalbasolutions/CAREPULSE/toad/src/toad/cli.py: 5: from: not found
+/home/xibalbasolutions/CAREPULSE/toad/src/toad/cli.py: 8: Syntax error: "(" unexpected
+INFO     127.0.0.1 [25/Dec/2025:21:39:33 -0600] "GET /ws?width=184&height=30    
+         HTTP/1.1" 101 0 "-" "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:146.0) 
+         Gecko/20100101 Firefox/146.0"                                          
+INFO     127.0.0.1 [25/Dec/2025:21:39:56 -0600] "GET / HTTP/1.1" 200 4464       
+         "http://localhost:3000/" "Mozilla/5.0 (X11; Ubuntu; Linux x86_64;      
+         rv:146.0) Gecko/20100101 Firefox/146.0"                                
+ERROR    Application failed to start                                            

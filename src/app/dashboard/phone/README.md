@@ -1,28 +1,18 @@
-# Phone Module: Integrated VoIP Solution
+# Phone & VoIP Module
 
-A browser-based softphone that allows team members to make and receive calls directly within the application using SIP/WebRTC technology.
+The Phone module provides integrated voice communication capabilities directly within the CarePulse dashboard.
 
-## ✨ Key Features
+## Features
+- **Dialer**: In-browser dialing with mute, hold, and transfer capabilities.
+- **Call History**: Log of incoming, outgoing, and missed calls.
+- **Voicemail**: Visual voicemail interface with playback.
+- **Micro-CRM**: Built-in "Add Contact" feature to save callers directly to the agency CRM.
+- **Active Call Handling**: Real-time call status indication.
 
-- **Web Dialer**: Full dialpad for outbound calls.
-- **Inbound Calls**: Real-time notification and call handling.
-- **Call History**: Log of inbound, outbound, and missed calls with durations.
-- **SIP Integration**: Compatible with any SIP-compliant provider (Nextiva, Asterisk, etc.).
-- **Live Status**: Visual indication of registration and connection status.
+## Architecture
+- **Twilio Integration**: Powered by Twilio SDK (client-side) and TwiML (server-side).
+- **WebSockets**: Real-time events for incoming calls.
+- **State Management**: Uses React context or local state to manage call status.
 
-## ⚙️ Configuration
-
-1. Navigate to `Dashboard > Phone > Settings`.
-2. Enter your **SIP Credentials**:
-    - **Username**
-    - **Password**
-    - **Domain**
-    - **WebSocket URL** (e.g., `wss://your-sip-proxy:8089/ws`)
-3. Save to register the line.
-
-## 📂 Architecture
-
-- **Page**: `src/app/dashboard/phone/page.tsx`
-- **Context**: `src/lib/contexts/SipContext.tsx`
-- **Components**: `src/components/voip/` (Dialer, CallWindow)
-- **Model**: `SipAccount` in `schema.prisma`.
+## Usage
+Navigate to `/dashboard/phone` to access the dialer. ensure you have granted microphone permissions.

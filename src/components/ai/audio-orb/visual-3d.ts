@@ -106,128 +106,130 @@ export class GdmLiveAudioVisuals3D extends LitElement {
 
   private init() {
     console.log('GdmLiveAudioVisuals3D: init() called');
-    
+
     try {
-        const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x100c14);
+      const scene = new THREE.Scene();
+      scene.background = new THREE.Color(0x100c14);
 
-        const backdrop = new THREE.Mesh(
-          new THREE.IcosahedronGeometry(10, 5),
-          new THREE.RawShaderMaterial({
-            uniforms: {
-              resolution: { value: new THREE.Vector2(1, 1) },
-              rand: { value: 0 },
-            },
-            vertexShader: backdropVS,
-            fragmentShader: backdropFS,
-            glslVersion: THREE.GLSL3,
-          }),
+      const backdrop = new THREE.Mesh(
+        new THREE.IcosahedronGeometry(10, 5),
+        new THREE.RawShaderMaterial({
+          uniforms: {
+            resolution: { value: new THREE.Vector2(1, 1) },
+            rand: { value: 0 },
+          },
+          vertexShader: backdropVS,
+          fragmentShader: backdropFS,
+          glslVersion: THREE.GLSL3,
+        }),
+      );
+      backdrop.material.side = THREE.BackSide;
+      scene.add(backdrop);
+      this.backdrop = backdrop;
+
+      const camera = new THREE.PerspectiveCamera(
+        75,
+        window.innerWidth / window.innerHeight,
+        0.1,
+        1000,
+      );
+      camera.position.set(2, -2, 5);
+      this.camera = camera;
+
+      const renderer = new THREE.WebGLRenderer({
+        canvas: this.canvas,
+        antialias: !true,
+      });
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setPixelRatio(window.devicePixelRatio / 1);
+
+      const geometry = new THREE.IcosahedronGeometry(1, 10);
+
+      new EXRLoader().load('piz_compressed.exr', (texture: THREE.Texture) => {
+        texture.mapping = THREE.EquirectangularReflectionMapping;
+        const exrCubeRenderTarget = pmremGenerator.fromEquirectangular(texture);
+        sphereMaterial.envMap = exrCubeRenderTarget.texture;
+        sphere.visible = true;
+      }, undefined, (err) => {
+        console.warn("Failed to load EXR texture", err);
+      });
+
+      const pmremGenerator = new THREE.PMREMGenerator(renderer);
+      pmremGenerator.compileEquirectangularShader();
+
+      const sphereMaterial = new THREE.MeshStandardMaterial({
+        color: 0x000010,
+        metalness: 0.5,
+        roughness: 0.1,
+        emissive: 0x000010,
+        emissiveIntensity: 1.5,
+      });
+
+      sphereMaterial.onBeforeCompile = (shader) => {
+        shader.uniforms.time = { value: 0 };
+        shader.uniforms.inputData = { value: new THREE.Vector4() };
+        shader.uniforms.outputData = { value: new THREE.Vector4() };
+
+        sphereMaterial.userData.shader = shader;
+
+        shader.vertexShader = sphereVS;
+      };
+
+      const sphere = new THREE.Mesh(geometry, sphereMaterial);
+      scene.add(sphere);
+      sphere.visible = false;
+
+      this.sphere = sphere;
+
+      const renderPass = new RenderPass(scene, camera);
+
+      const bloomPass = new UnrealBloomPass(
+        new THREE.Vector2(window.innerWidth, window.innerHeight),
+        5,
+        0.5,
+        0,
+      );
+
+      const fxaaPass = new ShaderPass(FXAAShader);
+
+      const composer = new EffectComposer(renderer);
+      composer.addPass(renderPass);
+      // composer.addPass(fxaaPass);
+      composer.addPass(bloomPass);
+
+      this.composer = composer;
+
+      const onWindowResize = () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        const dPR = renderer.getPixelRatio();
+        const w = window.innerWidth;
+        const h = window.innerHeight;
+        backdrop.material.uniforms.resolution.value.set(w * dPR, h * dPR);
+        renderer.setSize(w, h);
+        composer.setSize(w, h);
+        fxaaPass.material.uniforms['resolution'].value.set(
+          1 / (w * dPR),
+          1 / (h * dPR),
         );
-        backdrop.material.side = THREE.BackSide;
-        scene.add(backdrop);
-        this.backdrop = backdrop;
+      }
 
-        const camera = new THREE.PerspectiveCamera(
-          75,
-          window.innerWidth / window.innerHeight,
-          0.1,
-          1000,
-        );
-        camera.position.set(2, -2, 5);
-        this.camera = camera;
+      window.addEventListener('resize', onWindowResize);
+      onWindowResize();
 
-        const renderer = new THREE.WebGLRenderer({
-          canvas: this.canvas,
-          antialias: !true,
-        });
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.setPixelRatio(window.devicePixelRatio / 1);
-
-        const geometry = new THREE.IcosahedronGeometry(1, 10);
-
-        new EXRLoader().load('piz_compressed.exr', (texture: THREE.Texture) => {
-          texture.mapping = THREE.EquirectangularReflectionMapping;
-          const exrCubeRenderTarget = pmremGenerator.fromEquirectangular(texture);
-          sphereMaterial.envMap = exrCubeRenderTarget.texture;
-          sphere.visible = true;
-        }, undefined, (err) => {
-            console.warn("Failed to load EXR texture", err);
-        });
-
-        const pmremGenerator = new THREE.PMREMGenerator(renderer);
-        pmremGenerator.compileEquirectangularShader();
-
-        const sphereMaterial = new THREE.MeshStandardMaterial({
-          color: 0x000010,
-          metalness: 0.5,
-          roughness: 0.1,
-          emissive: 0x000010,
-          emissiveIntensity: 1.5,
-        });
-
-        sphereMaterial.onBeforeCompile = (shader) => {
-          shader.uniforms.time = { value: 0 };
-          shader.uniforms.inputData = { value: new THREE.Vector4() };
-          shader.uniforms.outputData = { value: new THREE.Vector4() };
-
-          sphereMaterial.userData.shader = shader;
-
-          shader.vertexShader = sphereVS;
-        };
-
-        const sphere = new THREE.Mesh(geometry, sphereMaterial);
-        scene.add(sphere);
-        sphere.visible = false;
-
-        this.sphere = sphere;
-
-        const renderPass = new RenderPass(scene, camera);
-
-        const bloomPass = new UnrealBloomPass(
-          new THREE.Vector2(window.innerWidth, window.innerHeight),
-          5,
-          0.5,
-          0,
-        );
-
-        const fxaaPass = new ShaderPass(FXAAShader);
-
-        const composer = new EffectComposer(renderer);
-        composer.addPass(renderPass);
-        // composer.addPass(fxaaPass);
-        composer.addPass(bloomPass);
-
-        this.composer = composer;
-
-        const onWindowResize = () => {
-          camera.aspect = window.innerWidth / window.innerHeight;
-          camera.updateProjectionMatrix();
-          const dPR = renderer.getPixelRatio();
-          const w = window.innerWidth;
-          const h = window.innerHeight;
-          backdrop.material.uniforms.resolution.value.set(w * dPR, h * dPR);
-          renderer.setSize(w, h);
-          composer.setSize(w, h);
-          fxaaPass.material.uniforms['resolution'].value.set(
-            1 / (w * dPR),
-            1 / (h * dPR),
-          );
-        }
-
-        window.addEventListener('resize', onWindowResize);
-        onWindowResize();
-
-        this.animation();
+      this.animation();
     } catch (e) {
-        console.error("WebGL Initialization failed:", e);
-        this.webGLAvailable = false;
+      console.error("WebGL Initialization failed:", e);
+      this.webGLAvailable = false;
     }
   }
 
   private animation() {
     if (!this.webGLAvailable) return;
-    
+
     requestAnimationFrame(() => this.animation());
+
+    if (!this.inputAnalyser || !this.outputAnalyser) return;
 
     this.inputAnalyser.update();
     this.outputAnalyser.update();
@@ -282,14 +284,19 @@ export class GdmLiveAudioVisuals3D extends LitElement {
   }
 
   protected firstUpdated() {
-    this.canvas = this.shadowRoot!.querySelector('canvas') as HTMLCanvasElement;
+    const canvas = this.shadowRoot?.querySelector('canvas');
+    if (!canvas) {
+      console.warn('GdmLiveAudioVisuals3D: canvas element not found');
+      return;
+    }
+    this.canvas = canvas as HTMLCanvasElement;
     this.init();
   }
 
   protected render() {
-    return this.webGLAvailable 
-        ? html`<canvas></canvas>`
-        : html`<div class="fallback-orb"></div>`;
+    return this.webGLAvailable
+      ? html`<canvas></canvas>`
+      : html`<div class="fallback-orb"></div>`;
   }
 }
 

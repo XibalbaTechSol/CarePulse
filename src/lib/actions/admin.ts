@@ -31,6 +31,11 @@ export async function getUser(id: string) {
     if (user) {
         user.documents = sql.all(`SELECT * FROM Document WHERE userId = ?`, [user.id]);
         user.certifications = sql.all(`SELECT * FROM Certification WHERE userId = ?`, [user.id]);
+        user.tags = sql.all(`
+            SELECT t.* FROM Tag t
+            JOIN UserTag ut ON ut.tagId = t.id
+            WHERE ut.userId = ?
+        `, [user.id]);
     }
 
     return user;

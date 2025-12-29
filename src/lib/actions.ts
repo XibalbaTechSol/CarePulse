@@ -153,7 +153,33 @@ export async function getFaxes() {
     return sql.all(`SELECT * FROM Fax WHERE userId = ? ORDER BY createdAt DESC`, [user.id]);
 }
 
-// --- CRM Actions ---
+export async function analyzeFax(faxId: string) {
+    const user = await getCurrentUser();
+    if (!user) throw new Error('Unauthorized');
+
+    const fax = sql.get<any>(`SELECT * FROM Fax WHERE id = ?`, [faxId]);
+    if (!fax) throw new Error('Fax not found');
+
+    // In a real app, we would fetch the PDF, run OCR
+    // Mocking OCR text based on whether it's inbound/outbound
+    const mockOcrText = fax.direction === 'INBOUND'
+        ? `REFERRAL FORM - NORTHSIDE CLINIC. Patient: John Doe, DOB: 01/15/1975. Reason: Routine blood work and physical. Previous history of hypertension.`
+        : `Dr. Smith - Patient John Doe (01/15/1975) request for refill on Lisinopril 20mg.`;
+
+    const { documentProcessor } = await import('./ai/services/document-processor');
+    const analysis = await documentProcessor.processDocument(mockOcrText);
+
+    return analysis;
+}
+export async function generateScribeNote(transcript: string) {
+    const user = await getCurrentUser();
+    if (!user) throw new Error('Unauthorized');
+
+    const { clinicalNLP } = await import('./ai/services/clinical-nlp');
+    const note = await clinicalNLP.generateSOAP(transcript);
+
+    return note;
+}
 export async function getContacts() {
     const user = await getCurrentUser();
     if (!user) return [];

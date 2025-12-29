@@ -180,7 +180,7 @@ export class GdmLiveAudio extends LitElement {
             // @ts-ignore
             const userContent = message.clientContent || message.recognitionResult;
             // @ts-ignore
-            if (userContent?.transcript) { 
+            if (userContent?.transcript) {
               this.dispatchEvent(new CustomEvent('user-text', {
                 detail: { text: userContent.transcript },
                 bubbles: true,
@@ -307,11 +307,23 @@ export class GdmLiveAudio extends LitElement {
   }
 
   async sendText(text: string) {
-    if (!this.session) return;
-    try {
-        await this.session.send({ parts: [{ text }] }); 
-    } catch (e) {
+    // @ts-ignore
+    if (this.session && typeof this.session.send === 'function') {
+      try {
+        // @ts-ignore
+        await this.session.send({ parts: [{ text }] });
+      } catch (e) {
         console.error("Failed to send text:", e);
+      }
+    } else {
+      console.warn("Session.send is not a function or session is null.");
+      if (this.session) {
+        // Inspect prototype to see what's available
+        try {
+          console.log("Session prototype:", Object.getPrototypeOf(this.session));
+          console.log("Session keys:", Object.keys(this.session));
+        } catch (_e) { }
+      }
     }
   }
 

@@ -1,34 +1,77 @@
 'use client';
 
-import React, { useState } from 'react';
-import { Send, Image, Smile, MoreVertical, Phone, Video } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Send, Image, Smile, MoreVertical, Phone, Video, Search, SmilePlus, Meh, Frown } from 'lucide-react';
+import { getContacts } from '@/lib/actions/crm';
+import ContactProfile from '@/components/crm/ContactProfile';
+
+// Mock data helpers
+const PREVIEWS = ['Hey, are we still on?', 'Please send the report.', 'Call me when you can.', 'Thanks!', 'See you tomorrow.'];
+const TIMESTAMPS = ['10:42 AM', 'Yesterday', 'Tue', 'Mon', 'Last week'];
 
 export default function MessagesView() {
-    const [activeConversation, setActiveConversation] = useState<number | null>(1);
+    const [conversations, setConversations] = useState<any[]>([]);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [activeConvId, setActiveConvId] = useState<string | null>(null);
     const [messageInput, setMessageInput] = useState('');
+    const [loading, setLoading] = useState(true);
+    const [selectedContact, setSelectedContact] = useState<any | null>(null);
 
-    const conversations = [
-        { id: 1, name: 'Alyssa G', number: '+1 (262) 412-3861', time: '10:42 AM', preview: 'See you then!', avatar: 'A', color: '#795548', unread: 0 },
-        { id: 2, name: 'LilMike', number: '+1 (612) 562-7746', time: 'Yesterday', preview: 'Shit got that gas money', avatar: 'L', color: '#3f51b5', unread: 1 },
-        { id: 3, name: 'Unknown', number: '(555) 123-4567', time: 'Tue', preview: 'Who is this?', avatar: '#', color: '#607d8b', unread: 0 },
-    ];
+    useEffect(() => {
+        async function fetchContacts() {
+            setLoading(true);
+            try {
+                const data = await getContacts(searchQuery);
+                // Augment contacts to look like conversations
+                const augmented = data.map((c: any) => ({
+                    ...c,
+                    preview: PREVIEWS[Math.floor(Math.random() * PREVIEWS.length)],
+                    time: TIMESTAMPS[Math.floor(Math.random() * TIMESTAMPS.length)],
+                    unread: Math.random() > 0.7 ? Math.floor(Math.random() * 5) : 0,
+                    avatarColor: '#' + Math.floor(Math.random() * 16777215).toString(16),
+                    sentiment: ['positive', 'neutral', 'negative'][Math.floor(Math.random() * 3)]
+                }));
+                setConversations(augmented);
+            } catch (error) {
+                console.error("Failed to fetch contacts", error);
+            } finally {
+                setLoading(false);
+            }
+        }
 
-    const messages = [
-        { id: 1, sender: 'them', text: 'Hey, are we still on for today?', time: '10:30 AM' },
-        { id: 2, sender: 'me', text: 'Yeah, definitely. 2pm right?', time: '10:32 AM' },
-        { id: 3, sender: 'them', text: 'Perfect. See you then!', time: '10:42 AM' },
-    ];
+        const timer = setTimeout(() => {
+            fetchContacts();
+        }, 300);
+        return () => clearTimeout(timer);
+    }, [searchQuery]);
+
+    const activeConversation = conversations.find(c => c.id === activeConvId);
 
     return (
-        <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
+        <div style={{ flex: 1, display: 'flex', overflow: 'hidden', position: 'relative' }}>
             {/* List Pane */}
             <div style={{
                 width: '320px',
-                overflowY: 'auto',
+                display: 'flex',
+                flexDirection: 'column',
                 borderRight: '1px solid var(--glass-border)',
                 background: 'rgba(255,255,255,0.01)'
             }}>
-                <div style={{ padding: '1rem 1.5rem' }}>
+                <div style={{ padding: '1rem 1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                    {/* Search Bar */}
+                    <div className="relative">
+                        <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                            <Search size={16} className="text-text-tertiary" />
+                        </div>
+                        <input
+                            type="text"
+                            className="input pl-10 w-full"
+                            placeholder="Search messages..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                        />
+                    </div>
+
                     <button style={{
                         width: '100%',
                         padding: '0.75rem',
@@ -48,77 +91,93 @@ export default function MessagesView() {
                     </button>
                 </div>
 
-                <div style={{ display: 'flex', flexDirection: 'column' }}>
-                    {conversations.map(conv => (
-                        <div
-                            key={conv.id}
-                            onClick={() => setActiveConversation(conv.id)}
-                            className="glass-hover"
-                            style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                padding: '0.75rem 1.5rem',
-                                cursor: 'pointer',
-                                gap: '1rem',
-                                borderBottom: '1px solid rgba(255,255,255,0.03)',
-                                background: activeConversation === conv.id ? 'rgba(var(--primary-rgb), 0.05)' : 'transparent',
-                                borderLeft: activeConversation === conv.id ? '3px solid var(--primary)' : '3px solid transparent'
-                            }}
-                        >
-                            <div style={{
-                                width: '40px',
-                                height: '40px',
-                                borderRadius: '50%',
-                                background: conv.color,
-                                color: 'white',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                fontWeight: 'bold',
-                                flexShrink: 0,
-                                position: 'relative'
-                            }}>
-                                {conv.avatar}
-                                {conv.unread > 0 && (
+                <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
+                    {loading ? (
+                        <div className="p-4 text-center text-text-tertiary">Loading...</div>
+                    ) : conversations.length === 0 ? (
+                        <div className="p-4 text-center text-text-tertiary">No messages found</div>
+                    ) : (
+                        conversations.map(conv => (
+                            <div
+                                key={conv.id}
+                                onClick={() => setActiveConvId(conv.id)}
+                                className="glass-hover"
+                                style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    padding: '0.75rem 1.5rem',
+                                    cursor: 'pointer',
+                                    gap: '1rem',
+                                    borderBottom: '1px solid rgba(255,255,255,0.03)',
+                                    background: activeConvId === conv.id ? 'rgba(var(--primary-rgb), 0.05)' : 'transparent',
+                                    borderLeft: activeConvId === conv.id ? '3px solid var(--primary)' : '3px solid transparent'
+                                }}
+                            >
+                                <div style={{
+                                    width: '40px',
+                                    height: '40px',
+                                    borderRadius: '50%',
+                                    background: conv.avatarColor,
+                                    color: 'white',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    fontWeight: 'bold',
+                                    flexShrink: 0,
+                                    position: 'relative'
+                                }}>
+                                    {(conv.firstName?.[0] || '') + (conv.lastName?.[0] || '')}
+                                    {conv.unread > 0 && (
+                                        <div style={{
+                                            position: 'absolute',
+                                            top: -2,
+                                            right: -2,
+                                            width: '12px',
+                                            height: '12px',
+                                            borderRadius: '50%',
+                                            background: 'var(--primary)',
+                                            border: '2px solid var(--bg-main)'
+                                        }} />
+                                    )}
+                                </div>
+                                <div style={{ flex: 1, minWidth: 0 }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                                        <span style={{
+                                            fontWeight: conv.unread > 0 ? '700' : '500',
+                                            fontSize: '0.95rem',
+                                            color: 'var(--text-main)',
+                                            whiteSpace: 'nowrap',
+                                            overflow: 'hidden',
+                                            textOverflow: 'ellipsis'
+                                        }}>
+                                            {conv.firstName} {conv.lastName}
+                                        </span>
+                                        <span style={{ fontSize: '0.75rem', color: conv.unread > 0 ? 'var(--primary)' : 'var(--text-muted)', fontWeight: conv.unread > 0 ? '600' : '400' }}>{conv.time}</span>
+                                    </div>
                                     <div style={{
-                                        position: 'absolute',
-                                        top: -2,
-                                        right: -2,
-                                        width: '12px',
-                                        height: '12px',
-                                        borderRadius: '50%',
-                                        background: 'var(--primary)',
-                                        border: '2px solid var(--bg-main)'
-                                    }} />
-                                )}
-                            </div>
-                            <div style={{ flex: 1, minWidth: 0 }}>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-                                    <span style={{
-                                        fontWeight: conv.unread > 0 ? '700' : '500',
-                                        fontSize: '0.95rem',
-                                        color: conv.unread > 0 ? 'var(--text-main)' : 'var(--text-main)',
+                                        fontSize: '0.85rem',
+                                        color: conv.unread > 0 ? 'var(--text-main)' : 'var(--text-muted)',
                                         whiteSpace: 'nowrap',
                                         overflow: 'hidden',
-                                        textOverflow: 'ellipsis'
+                                        textOverflow: 'ellipsis',
+                                        fontWeight: conv.unread > 0 ? '600' : '400',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '0.4rem'
                                     }}>
-                                        {conv.name}
-                                    </span>
-                                    <span style={{ fontSize: '0.75rem', color: conv.unread > 0 ? 'var(--primary)' : 'var(--text-muted)', fontWeight: conv.unread > 0 ? '600' : '400' }}>{conv.time}</span>
-                                </div>
-                                <div style={{
-                                    fontSize: '0.85rem',
-                                    color: conv.unread > 0 ? 'var(--text-main)' : 'var(--text-muted)',
-                                    whiteSpace: 'nowrap',
-                                    overflow: 'hidden',
-                                    textOverflow: 'ellipsis',
-                                    fontWeight: conv.unread > 0 ? '600' : '400'
-                                }}>
-                                    {conv.preview}
+                                        <div style={{
+                                            width: '6px',
+                                            height: '6px',
+                                            borderRadius: '50%',
+                                            background: conv.sentiment === 'positive' ? 'var(--success)' : conv.sentiment === 'neutral' ? 'var(--warning)' : 'var(--error)',
+                                            flexShrink: 0
+                                        }} title={`Sentiment: ${conv.sentiment}`} />
+                                        {conv.preview}
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    ))}
+                        ))
+                    )}
                 </div>
             </div>
 
@@ -133,9 +192,29 @@ export default function MessagesView() {
                         alignItems: 'center',
                         justifyContent: 'space-between'
                     }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                            <div style={{ fontSize: '1.2rem', fontWeight: '600', color: 'var(--text-main)' }}>Alyssa G</div>
-                            <div style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>+1 (262) 412-3861</div>
+                        <div
+                            style={{ display: 'flex', alignItems: 'center', gap: '1rem', cursor: 'pointer' }}
+                            onClick={() => setSelectedContact(activeConversation)}
+                        >
+                            <div style={{ fontSize: '1.2rem', fontWeight: '600', color: 'var(--text-main)' }}>
+                                {activeConversation.firstName} {activeConversation.lastName}
+                            </div>
+                            <div style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>{activeConversation.phone}</div>
+                            <div style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '0.4rem',
+                                background: activeConversation.sentiment === 'positive' ? 'rgba(var(--success-rgb), 0.1)' : activeConversation.sentiment === 'neutral' ? 'rgba(var(--warning-rgb), 0.1)' : 'rgba(var(--error-rgb), 0.1)',
+                                padding: '2px 8px',
+                                borderRadius: '12px',
+                                fontSize: '10px',
+                                fontWeight: 'bold',
+                                color: activeConversation.sentiment === 'positive' ? 'var(--success)' : activeConversation.sentiment === 'neutral' ? 'var(--warning)' : 'var(--error)',
+                                textTransform: 'uppercase'
+                            }}>
+                                {activeConversation.sentiment === 'positive' ? <SmilePlus size={12} /> : activeConversation.sentiment === 'neutral' ? <Meh size={12} /> : <Frown size={12} />}
+                                {activeConversation.sentiment}
+                            </div>
                         </div>
                         <div style={{ display: 'flex', gap: '1rem' }}>
                             <button className="glass-hover" style={{ padding: '0.5rem', borderRadius: '50%', border: 'none', background: 'transparent', color: 'var(--text-muted)', cursor: 'pointer' }}><Phone size={20} /></button>
@@ -144,30 +223,14 @@ export default function MessagesView() {
                         </div>
                     </div>
 
-                    {/* Messages */}
+                    {/* Messages (Mocked for now) */}
                     <div style={{ flex: 1, padding: '2rem', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                        {messages.map(msg => (
-                            <div key={msg.id} style={{
-                                alignSelf: msg.sender === 'me' ? 'flex-end' : 'flex-start',
-                                maxWidth: '70%',
-                                display: 'flex',
-                                flexDirection: 'column',
-                                alignItems: msg.sender === 'me' ? 'flex-end' : 'flex-start'
-                            }}>
-                                <div style={{
-                                    padding: '0.8rem 1.2rem',
-                                    borderRadius: '18px',
-                                    background: msg.sender === 'me' ? 'var(--primary)' : 'rgba(255,255,255,0.1)',
-                                    color: msg.sender === 'me' ? 'white' : 'var(--text-main)',
-                                    fontSize: '0.95rem',
-                                    borderBottomRightRadius: msg.sender === 'me' ? '4px' : '18px',
-                                    borderBottomLeftRadius: msg.sender === 'me' ? '18px' : '4px'
-                                }}>
-                                    {msg.text}
-                                </div>
-                                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.25rem', padding: '0 0.5rem' }}>{msg.time}</span>
-                            </div>
-                        ))}
+                        <div style={{ alignSelf: 'flex-start', maxWidth: '70%', background: 'rgba(255,255,255,0.1)', padding: '0.8rem 1.2rem', borderRadius: '18px', borderBottomLeftRadius: '4px' }}>
+                            {activeConversation.preview}
+                        </div>
+                        <div style={{ alignSelf: 'flex-end', maxWidth: '70%', background: 'var(--primary)', color: 'white', padding: '0.8rem 1.2rem', borderRadius: '18px', borderBottomRightRadius: '4px' }}>
+                            Okay, sure.
+                        </div>
                     </div>
 
                     {/* Input Area */}
@@ -219,6 +282,11 @@ export default function MessagesView() {
                 <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)' }}>
                     Select a conversation to start chatting
                 </div>
+            )}
+
+            {/* Contact Profile Slide-over */}
+            {selectedContact && (
+                <ContactProfile contact={selectedContact} onClose={() => setSelectedContact(null)} />
             )}
         </div>
     );

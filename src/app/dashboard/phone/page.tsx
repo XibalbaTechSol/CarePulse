@@ -8,7 +8,7 @@ import PhoneSidebar from '@/components/voip/PhoneSidebar';
 import CallsView from '@/components/voip/CallsView';
 import MessagesView from '@/components/voip/MessagesView';
 import VoicemailView from '@/components/voip/VoicemailView';
-import { Search } from 'lucide-react';
+import { Search, UserPlus } from 'lucide-react';
 import AddContactModal from '@/components/crm/AddContactModal';
 
 function SipStatusBadge() {
@@ -110,17 +110,25 @@ export default function PhoneDashboard() {
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
                         <SipStatusBadge />
-                        <button className="glass-hover" style={{
-                            background: 'var(--primary)',
-                            color: 'white',
-                            border: 'none',
-                            padding: '0.6rem 1.2rem',
-                            borderRadius: '24px',
-                            fontWeight: '600',
-                            fontSize: '0.9rem',
-                            cursor: 'pointer'
-                        }}>
-                            Upgrade
+                        <button
+                            onClick={() => setIsAddContactOpen(true)}
+                            className="glass-hover"
+                            style={{
+                                background: 'var(--primary)',
+                                color: 'white',
+                                border: 'none',
+                                padding: '0.6rem 1.4rem',
+                                borderRadius: '24px',
+                                fontWeight: '700',
+                                fontSize: '0.85rem',
+                                cursor: 'pointer',
+                                boxShadow: '0 4px 12px rgba(var(--primary-rgb), 0.3)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '8px'
+                            }}
+                        >
+                            <UserPlus size={16} /> Add Contact
                         </button>
                     </div>
                 </div>

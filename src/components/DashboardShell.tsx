@@ -5,18 +5,22 @@ import Sidebar from './dashboard/Sidebar';
 
 interface DashboardShellProps {
     children: React.ReactNode;
-    navItems: any[]; // Ignored, using Sidebar's internal nav
+    navItems: { name: string; href: string; icon: string; enabled?: boolean }[];
     userInitials: string;
     userName: string;
 }
 
-export default function DashboardShell({ children, userInitials, userName }: DashboardShellProps) {
+/**
+ * Nord-themed Dashboard Shell
+ * Main layout wrapper for the dashboard
+ */
+export default function DashboardShell({ children, navItems }: DashboardShellProps) {
     return (
-        <div className="flex h-screen w-full bg-background-dark overflow-hidden">
-            <Sidebar />
+        <div className="flex h-screen w-full overflow-hidden" style={{ background: 'var(--background)' }}>
+            <Sidebar navItems={navItems} />
             <main className="flex-1 flex flex-col h-full overflow-hidden relative">
-                {/* Header for Mobile/Context (Optional, can be added if needed, for now sticking to clean PaaS look) */}
-                <div className="flex-1 overflow-auto bg-background-dark">
+                {/* Main content area with Nord background */}
+                <div className="flex-1 overflow-auto" style={{ background: 'var(--background)' }}>
                     {children}
                 </div>
             </main>

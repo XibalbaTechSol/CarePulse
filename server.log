@@ -1,23 +1,26 @@
 
-> temp@0.1.0 dev
-> next dev
+> temp@0.1.0 start
+> next start
 
+▲ Next.js 16.1.0
+- Local:         http://localhost:3000
+- Network:       http://192.168.68.109:3000
+
+✓ Starting...
 ⚠ Warning: Next.js inferred your workspace root, but it may not be correct.
  We detected multiple lockfiles and selected the directory of /home/xibalbasolutions/package-lock.json as the root directory.
- To silence this warning, set `turbopack.root` in your Next.js config, or consider removing one of the lockfiles if it's not needed.
-   See https://nextjs.org/docs/app/api-reference/config/next-config-js/turbopack#root-directory for more information.
+ To silence this warning, set `outputFileTracingRoot` in your Next.js config, or consider removing one of the lockfiles if it's not needed.
+   See https://nextjs.org/docs/app/api-reference/config/next-config-js/output#caveats for more information.
  Detected additional lockfiles: 
    * /home/xibalbasolutions/CAREPULSE/package-lock.json
 
-▲ Next.js 16.1.0 (Turbopack)
-- Local:         http://localhost:3000
-- Network:       http://192.168.68.109:3000
-- Environments: .env
-
-✓ Starting...
-✓ Ready in 1377ms
-○ Compiling /dashboard/ai ...
-Raw DATABASE_URL: "file:./dev.db"ENCRYPTION_KEY=b8f73ee6dd8f4edae0b77dc48d53c253e529866458e8ad09b42025aefddcec86
-Detected potentially malformed DATABASE_URL (mashed env vars). Truncating at .db
-Resolved Database path: /home/xibalbasolutions/CAREPULSE/dev.db
- GET /dashboard/ai 200 in 14.3s (compile: 13.5s, render: 796ms)
+✓ Ready in 1189ms
+Raw DATABASE_URL: file:carepulse.db
+Resolved Database path: /home/xibalbasolutions/CAREPULSE/carepulse.db
+Raw DATABASE_URL: file:carepulse.db
+Resolved Database path: /home/xibalbasolutions/CAREPULSE/carepulse.db
+Error fetching beds: SqliteError: no such table: HospitalBed
+    at d (.next/server/chunks/ssr/CAREPULSE_1325c82d._.js:2:434)
+    at async m (.next/server/chunks/ssr/CAREPULSE_623dd711._.js:1:7267) {
+  code: 'SQLITE_ERROR'
+}

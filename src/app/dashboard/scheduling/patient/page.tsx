@@ -1,7 +1,5 @@
 'use client';
 
-'use client';
-
 import React, { useState } from 'react';
 import {
     Search,
@@ -128,7 +126,21 @@ export default function PatientScheduling() {
                                                 }`}
                                         >
                                             <div className="flex justify-between items-start mb-1">
-                                                <span className="text-[10px] font-black uppercase tracking-widest">{shift.type}</span>
+                                                <div className="flex flex-col">
+                                                    <span className="text-[10px] font-black uppercase tracking-widest">{shift.type}</span>
+                                                    {shift.type === 'HHA visit' && (
+                                                        <div className="flex items-center gap-1 mt-0.5">
+                                                            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                                                            <span className="text-[8px] font-bold text-gray-400">98% Show Rate</span>
+                                                        </div>
+                                                    )}
+                                                    {shift.type === 'SN visit' && (
+                                                        <div className="flex items-center gap-1 mt-0.5">
+                                                            <div className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+                                                            <span className="text-[8px] font-bold text-amber-600">AI: 15% No-show Risk</span>
+                                                        </div>
+                                                    )}
+                                                </div>
                                                 <MoreVertical size={12} className="opacity-0 group-hover:opacity-100 transition-opacity" />
                                             </div>
                                             <p className="text-xs font-bold leading-tight line-clamp-2">{shift.caregiver}</p>

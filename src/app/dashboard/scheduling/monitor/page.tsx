@@ -12,15 +12,18 @@ import {
     Search,
     Filter,
     ArrowUpRight,
-    ArrowDownRight
+    ArrowDownRight,
+    Sparkles,
+    Brain,
+    AlertTriangle
 } from 'lucide-react';
 
 export default function ScheduleMonitor() {
     const visits = [
-        { id: 'V-1001', type: 'SN', patient: 'Robert Miller', caregiver: 'Diana Prince', scheduled: '08:00 AM', actual: '08:02 AM', variance: '+2m', status: 'On-Site', color: 'emerald' },
-        { id: 'V-1002', type: 'HHA', patient: 'Sarah Connor', caregiver: 'Steve Rogers', scheduled: '09:00 AM', actual: '---', variance: '-15m', status: 'Late', color: 'rose' },
-        { id: 'V-1003', type: 'PT', patient: 'James Wilson', caregiver: 'Natasha Romanoff', scheduled: '09:30 AM', actual: '09:28 AM', variance: '-2m', status: 'Traveling', color: 'blue' },
-        { id: 'V-1004', type: 'OT', patient: 'Patricia Brown', caregiver: 'Wanda Maximoff', scheduled: '10:00 AM', actual: '---', variance: '---', status: 'Confirmed', color: 'amber' },
+        { id: 'V-1001', type: 'SN', patient: 'Robert Miller', caregiver: 'Diana Prince', scheduled: '08:00 AM', actual: '08:02 AM', variance: '+2m', status: 'On-Site', color: 'emerald', aiRisk: 5 },
+        { id: 'V-1002', type: 'HHA', patient: 'Sarah Connor', caregiver: 'Steve Rogers', scheduled: '09:00 AM', actual: '---', variance: '-15m', status: 'Late', color: 'rose', aiRisk: 85 },
+        { id: 'V-1003', type: 'PT', patient: 'James Wilson', caregiver: 'Natasha Romanoff', scheduled: '09:30 AM', actual: '09:28 AM', variance: '-2m', status: 'Traveling', color: 'blue', aiRisk: 12 },
+        { id: 'V-1004', type: 'OT', patient: 'Patricia Brown', caregiver: 'Wanda Maximoff', scheduled: '10:00 AM', actual: '---', variance: '---', status: 'Confirmed', color: 'amber', aiRisk: 45 },
     ];
 
     return (
@@ -98,6 +101,9 @@ export default function ScheduleMonitor() {
                                 <th className="px-6 py-3.5 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actual</th>
                                 <th className="px-6 py-3.5 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Variance</th>
                                 <th className="px-6 py-3.5 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
+                                <th className="px-6 py-3.5 text-xs font-bold text-indigo-500 uppercase tracking-wider flex items-center gap-1">
+                                    <Sparkles size={12} /> AI Risk
+                                </th>
                                 <th className="px-6 py-3.5 text-right text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
                             </tr>
                         </thead>
@@ -146,6 +152,16 @@ export default function ScheduleMonitor() {
                                                 }`}></span>
                                             {visit.status}
                                         </span>
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap">
+                                        <div className="flex items-center gap-2">
+                                            <div className="text-[10px] font-black px-2 py-0.5 rounded bg-gray-100 dark:bg-gray-800 text-gray-500">
+                                                {visit.aiRisk}%
+                                            </div>
+                                            <span className={`text-[10px] font-bold ${visit.aiRisk > 70 ? 'text-rose-500' : visit.aiRisk > 30 ? 'text-amber-500' : 'text-emerald-500'}`}>
+                                                {visit.aiRisk > 70 ? 'High Risk' : visit.aiRisk > 30 ? 'Medium' : 'Low'}
+                                            </span>
+                                        </div>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-right">
                                         <div className="flex justify-end gap-2 group-hover:opacity-100 lg:opacity-0 transition-opacity">

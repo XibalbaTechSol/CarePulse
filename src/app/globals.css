@@ -1,82 +1,392 @@
+@import '../styles/nord-theme.css';
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  /* google light theme (inspired) */
-  --background: #f8f9fa;
-  /* google grey 50 */
-  --surface: #ffffff;
-  --surface-highlight: #f1f3f4;
-  /* google grey 100 */
-  --border: #dadce0;
-  /* google grey 300 */
-  --primary: #1a73e8;
-  /* google blue 600 */
-  --primary-hover: #1557b0;
-  --primary-subtle: #e8f0fe;
-  /* google blue 50 */
-  --primary-ring: rgba(26, 115, 232, 0.2);
-  --text-primary: #202124;
-  /* google grey 900 */
-  --text-secondary: #5f6368;
-  /* google grey 700 */
-  --text-tertiary: #80868b;
-  --success: #188038;
-  --warning: #f29900;
-  --error: #d93025;
-}
-
-.dark {
-  /* google dark theme (inspired) */
-  --background: #202124;
-  --surface: #292a2d;
-  --surface-highlight: #35363a;
-  --border: #3c4043;
-  --primary: #8ab4f8;
-  /* google blue 200 */
-  --primary-hover: #aecbfa;
-  --primary-subtle: #303134;
-  /* dark subtle */
-  --primary-ring: rgba(138, 180, 248, 0.2);
-  --text-primary: #e8eaed;
-  --text-secondary: #9aa0a6;
-  --text-tertiary: #80868b;
-  --success: #81c995;
-  --warning: #fdd663;
-  --error: #f28b82;
-}
+/* 
+ * Global Styles - Nord Healthcare Platform
+ * Base styles using Nord design system
+ */
 
 @layer base {
+  * {
+    @apply border-border;
+  }
+
   body {
-    @apply bg-background text-text-primary font-sans antialiased transition-colors duration-200;
+    @apply bg-background text-text-primary font-sans antialiased;
+    transition: background-color 200ms ease-in-out, color 200ms ease-in-out;
+  }
+
+  /* Headings */
+  h1 {
+    @apply text-4xl font-bold text-text-primary;
+    line-height: var(--line-height-tight);
+  }
+
+  h2 {
+    @apply text-3xl font-semibold text-text-primary;
+    line-height: var(--line-height-tight);
+  }
+
+  h3 {
+    @apply text-2xl font-semibold text-text-primary;
+    line-height: var(--line-height-normal);
+  }
+
+  h4 {
+    @apply text-xl font-medium text-text-primary;
+    line-height: var(--line-height-normal);
+  }
+
+  h5 {
+    @apply text-lg font-medium text-text-primary;
+    line-height: var(--line-height-normal);
+  }
+
+  h6 {
+    @apply text-base font-medium text-text-secondary;
+    line-height: var(--line-height-normal);
+  }
+
+  /* Links */
+  a {
+    @apply text-primary hover:text-primary-hover transition-colors;
+  }
+
+  /* Code */
+  code {
+    @apply font-mono text-sm bg-surface-highlight px-1 py-0.5 rounded;
+  }
+
+  pre {
+    @apply font-mono text-sm bg-surface p-4 rounded-lg overflow-x-auto;
+  }
+
+  /* Scrollbar styling for Nord theme */
+  ::-webkit-scrollbar {
+    width: 12px;
+    height: 12px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: var(--background);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--nord3);
+    border-radius: var(--radius-full);
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--nord8);
   }
 }
 
 @layer components {
+  /* ========================================
+   * CARD COMPONENTS
+   * ======================================== */
+
   .card {
-    @apply bg-surface border border-border rounded-lg shadow-sm overflow-hidden;
+    @apply bg-surface border border-border rounded-lg overflow-hidden;
+    box-shadow: var(--shadow-sm);
   }
 
   .card-hover {
-    @apply hover:shadow-md transition-shadow duration-200;
+    @apply transition-shadow duration-200;
+  }
+
+  .card-hover:hover {
+    box-shadow: var(--shadow-md);
+  }
+
+  .card-elevated {
+    @apply bg-background-elevated;
+    box-shadow: var(--shadow-md);
+  }
+
+  .card-header {
+    @apply px-6 py-4 border-b border-border bg-surface-highlight;
+  }
+
+  .card-body {
+    @apply px-6 py-4;
+  }
+
+  .card-footer {
+    @apply px-6 py-4 border-t border-border bg-surface-highlight;
+  }
+
+  /* ========================================
+   * BUTTON COMPONENTS
+   * ======================================== */
+
+  .btn {
+    @apply font-medium py-2 px-4 rounded-md transition-all duration-200 flex items-center justify-center gap-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed;
   }
 
   .btn-primary {
-    @apply bg-primary hover:bg-primary-hover text-white font-medium py-2 px-4 rounded-md transition-colors shadow-sm flex items-center justify-center gap-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply btn bg-primary hover:bg-primary-hover active:bg-primary-active text-nord0;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .btn-primary:hover:not(:disabled) {
+    box-shadow: var(--shadow-md);
+  }
+
+  .btn-primary:focus-visible {
+    @apply ring-2 ring-offset-2;
+    ring-color: var(--primary-ring);
+    ring-offset-color: var(--background);
+  }
+
+  .btn-secondary {
+    @apply btn bg-secondary hover:bg-secondary-hover text-nord0;
+    box-shadow: var(--shadow-sm);
   }
 
   .btn-outline {
-    @apply bg-transparent border border-border text-text-primary hover:bg-surface-highlight font-medium py-2 px-4 rounded-md transition-colors flex items-center justify-center gap-2 text-sm;
+    @apply btn bg-transparent border border-border text-text-primary hover:bg-surface-highlight;
   }
 
+  .btn-ghost {
+    @apply btn bg-transparent text-text-primary hover:bg-surface-highlight;
+  }
+
+  .btn-success {
+    @apply btn bg-success hover:brightness-110 text-nord0;
+  }
+
+  .btn-error {
+    @apply btn bg-error hover:brightness-110 text-nord0;
+  }
+
+  .btn-warning {
+    @apply btn bg-warning hover:brightness-110 text-nord0;
+  }
+
+  .btn-sm {
+    @apply py-1 px-3 text-xs;
+  }
+
+  .btn-lg {
+    @apply py-3 px-6 text-base;
+  }
+
+  /* ========================================
+   * INPUT COMPONENTS
+   * ======================================== */
+
   .input {
-    @apply w-full px-3 py-2 bg-surface border border-border rounded-md text-text-primary placeholder:text-text-tertiary focus:outline-none focus:ring-2 focus:ring-primary-ring focus:border-primary transition-all text-sm;
+    @apply w-full px-3 py-2 bg-surface border border-border rounded-md text-text-primary placeholder:text-text-tertiary transition-all text-sm;
+  }
+
+  .input:focus {
+    @apply outline-none ring-2 border-primary;
+    ring-color: var(--primary-ring);
+  }
+
+  .input:disabled {
+    @apply opacity-50 cursor-not-allowed bg-surface-highlight;
+  }
+
+  .input-error {
+    @apply border-error;
+  }
+
+  .input-error:focus {
+    @apply ring-error;
+    ring-color: var(--error-bg);
+  }
+
+  .input-success {
+    @apply border-success;
+  }
+
+  .input-label {
+    @apply block text-sm font-medium text-text-secondary mb-1;
+  }
+
+  .input-helper {
+    @apply text-xs text-text-tertiary mt-1;
+  }
+
+  .input-error-text {
+    @apply text-xs text-error mt-1;
+  }
+
+  /* ========================================
+   * BADGE COMPONENTS
+   * ======================================== */
+
+  .badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+  }
+
+  .badge-primary {
+    @apply bg-primary-subtle text-primary border border-primary;
+  }
+
+  .badge-success {
+    @apply text-success border border-success;
+    background-color: var(--success-bg);
+  }
+
+  .badge-warning {
+    @apply text-warning border border-warning;
+    background-color: var(--warning-bg);
+  }
+
+  .badge-error {
+    @apply text-error border border-error;
+    background-color: var(--error-bg);
+  }
+
+  .badge-info {
+    @apply text-info border border-info;
+    background-color: var(--info-bg);
+  }
+
+  /* ========================================
+   * ALERT COMPONENTS
+   * ======================================== */
+
+  .alert {
+    @apply p-4 rounded-lg border;
+  }
+
+  .alert-success {
+    @apply text-success border-success;
+    background-color: var(--success-bg);
+  }
+
+  .alert-warning {
+    @apply text-warning border-warning;
+    background-color: var(--warning-bg);
+  }
+
+  .alert-error {
+    @apply text-error border-error;
+    background-color: var(--error-bg);
+  }
+
+  .alert-info {
+    @apply text-info border-info;
+    background-color: var(--info-bg);
+  }
+
+  /* ========================================
+   * TABLE COMPONENTS
+   * ======================================== */
+
+  .table {
+    @apply w-full text-sm;
+  }
+
+  .table thead {
+    @apply bg-surface-highlight border-b border-border;
+  }
+
+  .table th {
+    @apply px-4 py-3 text-left font-semibold text-text-primary;
+  }
+
+  .table td {
+    @apply px-4 py-3 text-text-secondary border-b border-border;
+  }
+
+  .table tbody tr {
+    @apply hover:bg-surface-highlight transition-colors;
+  }
+
+  .table-striped tbody tr:nth-child(odd) {
+    @apply bg-surface;
+  }
+
+  .table-striped tbody tr:nth-child(even) {
+    @apply bg-background;
+  }
+
+  /* ========================================
+   * MODAL COMPONENTS
+   * ======================================== */
+
+  .modal-backdrop {
+    @apply fixed inset-0 bg-nord0/80 backdrop-blur-sm;
+    z-index: var(--z-modal-backdrop);
+  }
+
+  .modal {
+    @apply fixed inset-0 flex items-center justify-center p-4;
+    z-index: var(--z-modal);
+  }
+
+  .modal-content {
+    @apply bg-surface rounded-lg max-w-lg w-full;
+    box-shadow: var(--shadow-2xl);
+  }
+
+  .modal-header {
+    @apply px-6 py-4 border-b border-border;
+  }
+
+  .modal-body {
+    @apply px-6 py-4;
+  }
+
+  .modal-footer {
+    @apply px-6 py-4 border-t border-border flex items-center justify-end gap-3;
+  }
+
+  /* ========================================
+   * FORM COMPONENTS
+   * ======================================== */
+
+  .form-group {
+    @apply mb-4;
+  }
+
+  .checkbox,
+  .radio {
+    @apply w-4 h-4 text-primary bg-surface border-border rounded;
+  }
+
+  .checkbox:focus,
+  .radio:focus {
+    @apply ring-2 ring-offset-2;
+    ring-color: var(--primary-ring);
+    ring-offset-color: var(--background);
+  }
+
+  .toggle {
+    @apply relative inline-flex h-6 w-11 items-center rounded-full transition-colors;
+    background-color: var(--nord3);
+  }
+
+  .toggle:checked {
+    background-color: var(--primary);
+  }
+
+  .select {
+    @apply input appearance-none bg-right pr-10;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%238FBCBB' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-size: 1.5em 1.5em;
   }
 }
 
 @layer utilities {
   .text-balance {
     text-wrap: balance;
+  }
+
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
   }
 }

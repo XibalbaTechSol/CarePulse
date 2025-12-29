@@ -1,27 +1,74 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Dialer from './Dialer';
+import { getContacts } from '@/lib/actions/crm';
+import ContactProfile from '@/components/crm/ContactProfile';
+import { Search } from 'lucide-react';
+
+// Mock call types
+const CALL_TYPES = ['INBOUND', 'OUTBOUND', 'MISSED'];
+const TIMESTAMPS = ['Just now', '5m ago', '1h ago', 'Yesterday', 'Fri', 'Thu'];
 
 export default function CallsView() {
-    const calls = [
-        { id: 1, name: '76934', number: '76934', time: 'Fri', type: 'INBOUND', subtext: 'Your LinkedIn verification code is 994886.', avatar: '76', color: '#ff5722' },
-        { id: 2, name: 'Alyssa G Voice', number: '+1 (262) 412-3861', time: 'Fri', type: 'OUTBOUND', subtext: 'You: ^^crazy egg shaped baby thing from ...', avatar: 'A', color: '#795548' },
-        { id: 3, name: '98900', number: '98900', time: 'Thu', type: 'INBOUND', subtext: 'CHS: Your student Brayden has an unexc...', avatar: '98', color: '#e91e63' },
-        { id: 4, name: 'LilMike', number: '+1 (612) 562-7746', time: 'Wed', type: 'OUTBOUND', subtext: 'You: Shit got that gas money', avatar: 'L', color: '#3f51b5' },
-        { id: 5, name: 'Sam', number: '+1 (555) 123-4567', time: 'Tue', type: 'OUTBOUND', subtext: 'You: This is Jacob my phone is turned off...', avatar: 'S', color: '#f44336' },
-    ];
+    const [contacts, setContacts] = useState<any[]>([]);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [selectedContact, setSelectedContact] = useState<any | null>(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        async function fetchContacts() {
+            setLoading(true);
+            try {
+                const data = await getContacts(searchQuery);
+                // Augment with mock call data
+                const augmented = data.map((c: any) => ({
+                    ...c,
+                    callType: CALL_TYPES[Math.floor(Math.random() * CALL_TYPES.length)],
+                    callTime: TIMESTAMPS[Math.floor(Math.random() * TIMESTAMPS.length)],
+                    avatarColor: '#' + Math.floor(Math.random() * 16777215).toString(16) // Random color
+                }));
+                setContacts(augmented);
+            } catch (error) {
+                console.error("Failed to fetch contacts", error);
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        // Debounce search
+        const timer = setTimeout(() => {
+            fetchContacts();
+        }, 300);
+
+        return () => clearTimeout(timer);
+    }, [searchQuery]);
 
     return (
-        <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
+        <div style={{ flex: 1, display: 'flex', overflow: 'hidden', position: 'relative' }}>
             {/* Middle List Pane */}
             <div style={{
                 width: '320px',
-                overflowY: 'auto',
+                display: 'flex',
+                flexDirection: 'column',
                 borderRight: '1px solid var(--glass-border)',
                 background: 'rgba(255,255,255,0.01)'
             }}>
-                <div style={{ padding: '1rem 1.5rem' }}>
+                <div style={{ padding: '1rem 1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                    {/* Search Bar */}
+                    <div className="relative">
+                        <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                            <Search size={16} className="text-text-tertiary" />
+                        </div>
+                        <input
+                            type="text"
+                            className="input pl-10 w-full"
+                            placeholder="Search calls..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                        />
+                    </div>
+
                     <button style={{
                         width: '100%',
                         padding: '0.75rem',
@@ -41,51 +88,63 @@ export default function CallsView() {
                     </button>
                 </div>
 
-                <div style={{ display: 'flex', flexDirection: 'column' }}>
-                    {calls.map(call => (
-                        <div key={call.id} className="glass-hover" style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            padding: '0.75rem 1.5rem',
-                            cursor: 'pointer',
-                            gap: '1rem',
-                            borderBottom: '1px solid rgba(255,255,255,0.03)'
-                        }}>
-                            <div style={{
-                                width: '40px',
-                                height: '40px',
-                                borderRadius: '50%',
-                                background: call.color || 'var(--primary-soft)',
-                                color: 'white',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                fontWeight: 'bold',
-                                flexShrink: 0
-                            }}>
-                                {call.avatar}
-                            </div>
-                            <div style={{ flex: 1, minWidth: 0 }}>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-                                    <span style={{ fontWeight: '500', fontSize: '0.95rem', color: 'var(--text-main)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                                        {call.name}
-                                    </span>
-                                    <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{call.time}</span>
+                <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
+                    {loading ? (
+                        <div className="p-4 text-center text-text-tertiary">Loading...</div>
+                    ) : contacts.length === 0 ? (
+                        <div className="p-4 text-center text-text-tertiary">No calls found</div>
+                    ) : (
+                        contacts.map(contact => (
+                            <div
+                                key={contact.id}
+                                className="glass-hover"
+                                onClick={() => setSelectedContact(contact)}
+                                style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    padding: '0.75rem 1.5rem',
+                                    cursor: 'pointer',
+                                    gap: '1rem',
+                                    borderBottom: '1px solid rgba(255,255,255,0.03)'
+                                }}
+                            >
+                                <div style={{
+                                    width: '40px',
+                                    height: '40px',
+                                    borderRadius: '50%',
+                                    background: contact.avatarColor || 'var(--primary-soft)',
+                                    color: 'white',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    fontWeight: 'bold',
+                                    flexShrink: 0
+                                }}>
+                                    {(contact.firstName?.[0] || '') + (contact.lastName?.[0] || '')}
                                 </div>
-                                <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                                    {call.subtext}
+                                <div style={{ flex: 1, minWidth: 0 }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                                        <span style={{ fontWeight: '500', fontSize: '0.95rem', color: 'var(--text-main)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                            {contact.firstName} {contact.lastName}
+                                        </span>
+                                        <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{contact.callTime}</span>
+                                    </div>
+                                    <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', display: 'flex', gap: '4px' }}>
+                                        <span className={contact.callType === 'MISSED' ? 'text-error' : ''}>{contact.callType}</span>
+                                        <span>•</span>
+                                        <span>{contact.phone || 'No number'}</span>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    ))}
+                        ))
+                    )}
                 </div>
             </div>
 
             {/* Right Panel: Dialpad */}
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
                 <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '2rem', textAlign: 'center' }}>
-                    {/* Empty state or call history detail could go here */}
-                    <div style={{ opacity: 0.5 }}>Select a call to view details</div>
+                    <div style={{ opacity: 0.5 }}>Select a contact to view details</div>
                 </div>
 
                 {/* Dialpad Section (Bottom Right) */}
@@ -100,6 +159,11 @@ export default function CallsView() {
                     <Dialer />
                 </div>
             </div>
+
+            {/* Contact Profile Slide-over */}
+            {selectedContact && (
+                <ContactProfile contact={selectedContact} onClose={() => setSelectedContact(null)} />
+            )}
         </div>
     );
 }

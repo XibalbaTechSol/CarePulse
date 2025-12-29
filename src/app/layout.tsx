@@ -5,11 +5,11 @@ import 'leaflet/dist/leaflet.css';
 
 import { ThemeProvider } from '@/lib/contexts/ThemeContext';
 
-const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
+const inter = Inter({ subsets: ['latin'], variable: '--font-sans' });
 
 export const metadata: Metadata = {
-  title: 'CarePulse - Intelligent Agency Care',
-  description: 'Enterprise Platform for Personal Care Agencies',
+  title: 'CarePulse -Intelligent Healthcare Platform',
+  description: 'Modular Healthcare Platform with Nord Design System',
 };
 
 export default function RootLayout({

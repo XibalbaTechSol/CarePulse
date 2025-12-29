@@ -77,6 +77,22 @@ Experience natural, context-aware assistance through our **volume-responsive Aud
 - **Eyes-Free Interaction**: Nurses can query client history or organization protocols hands-free during clinical evaluations.
 - **Visual Feedback**: Real-time frequency analysis provides a tactile, "living" presence for the AI, ensuring users know exactly when the model is processing deep reasoning.
 
+#### 🖥️ CarePulse Medical AI CLI
+For advanced users and developers, we've integrated a specialized **Terminal User Interface (TUI)** powered by the [TOAD](./toad/) framework:
+- **Privacy-First Medical Assistant**: Direct access to local Ollama models (Phi-3 Mini) or Gemini API fallback
+- **Webserver Mode**: Run CarePulse Medical AI as a standalone web application on port 8000
+- **Integrated Startup**: Automatically launched with the main CarePulse platform via `./rebuild_and_restart.sh`
+- **Clinical Prompts**: Pre-configured with medical-specific system prompts for clinical summarization and ICD-10 suggestions
+
+**Access the CLI:**
+```bash
+# Launch directly
+cd toad && python3 -m toad.cli run --agent medical
+
+# Or access the web interface (started automatically)
+http://localhost:8000
+```
+
 ---
 
 ## 🛠️ Tech Stack
@@ -121,21 +137,34 @@ Experience natural, context-aware assistance through our **volume-responsive Aud
 
 ## 🤖 AI Development (Hardware Alternatives)
 
-If you do not have the local hardware required to run the **Kiwi Thinking Model** via Ollama (e.g., 24GB+ VRAM), you can still develop the CarePulse AI module using cloud alternatives:
+The **CarePulse Medical AI** system is designed to work with both local and cloud AI providers. The integrated **TOAD CLI** automatically handles fallback between Ollama and Gemini.
 
-### 1. Cloud LLM Fallback (Recommended for Dev)
-You can configure the system to use **Google Gemini** or **OpenAI** during development by setting the `AI_PROVIDER` environment variable.
-- Update `src/app/api/chat/route.ts` to switch providers based on `.env`.
-- Add your API key to `.env` (e.g., `GOOGLE_GENERATIVE_AI_API_KEY`).
-
-### 2. Ollama Proxy
-If you have access to a remote server with a GPU, you can set the `OLLAMA_HOST` to point to that remote instance:
-```env
-OLLAMA_HOST="http://your-gpu-server-ip:11434"
+### Local LLM (Ollama)
+For maximum privacy and on-premises deployment, install Ollama with medical models:
+```bash
+./install_ollama.sh
 ```
 
-### 3. Mock Mode
-For UI/UX development, you can implement a simple mock response in the chat route to bypass the LLM entirely while testing the dashboard and tool-calling logic.
+### Cloud Fallback (Gemini)
+When Ollama is unavailable or to reduce RAM usage, the system automatically falls back to Google Gemini:
+- Set `USE_LOCAL_LLM=false` in your environment to use Gemini exclusively
+- API key is automatically read from `.env` (`GEMINI_API_KEY`)
+- No code changes required—fallback is transparent
+
+### CarePulse Medical AI CLI
+The integrated TUI provides a powerful interface for advanced users:
+```bash
+# Launch with local LLM (tries Ollama, falls back to Gemini)
+cd toad && python3 -m toad.cli run --agent medical
+
+# Force Gemini only
+USE_LOCAL_LLM=false python3 -m toad.cli run --agent medical
+
+# Run webserver (automatically started by rebuild_and_restart.sh)
+python3 -m toad.cli run --agent medical --serve --port 8000 --host localhost
+```
+
+For development without local hardware, the system seamlessly uses Gemini as configured in your `.env` file.
 
 ---
 
@@ -171,6 +200,7 @@ For detailed information on each module, refer to the README files in their resp
 - [Email Module](./src/app/dashboard/email/README.md)
 - [Storage Module](./src/app/dashboard/storage/README.md)
 - [Admin Module](./src/app/dashboard/admin/README.md)
+- [Specialty Care Module](./src/app/dashboard/specialty/README.md)
 
 ## 🤝 Contributing
 

@@ -126,7 +126,7 @@ export default function FaxDashboard() {
             </div>
 
             {/* Right Pane: Quick Actions & Status */}
-            <div style={{ width: '300px', borderLeft: '1px solid var(--glass-border)', padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '2rem', background: 'rgba(255,255,255,0.01)' }}>
+            <div style={{ width: '300px', borderLeft: '1px solid var(--glass-border)', padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '2rem', background: 'rgba(255,255,255,0.01)', position: 'relative', zIndex: 10 }}>
                 <div>
                     <h3 style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '1rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Account Status</h3>
                     <div className="glass" style={{ padding: '1.25rem', background: 'rgba(var(--primary-rgb), 0.05)', border: '1px solid rgba(var(--primary-rgb), 0.1)' }}>
@@ -165,9 +165,9 @@ export default function FaxDashboard() {
                     </div>
                 </div>
             </div>
-            <AddContactModal 
-                isOpen={isAddContactOpen} 
-                onClose={() => setIsAddContactOpen(false)} 
+            <AddContactModal
+                isOpen={isAddContactOpen}
+                onClose={() => setIsAddContactOpen(false)}
             />
         </div>
     );

@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { getFaxes } from '@/lib/actions';
-import { FileText, Clock, ArrowDownLeft, ArrowUpRight } from 'lucide-react';
+import { FileText, Clock, ArrowDownLeft, ArrowUpRight, Sparkles, Search, Loader2 } from 'lucide-react';
 
 interface Fax {
     id: string;
@@ -24,6 +24,12 @@ interface FaxInboxProps {
 export default function FaxInbox({ filter = 'inbox', selectedId, onSelect }: FaxInboxProps) {
     const [faxes, setFaxes] = useState<Fax[]>([]);
     const [loading, setLoading] = useState(true);
+    const [isExtracting, setIsExtracting] = useState(false);
+    const [extractedData, setExtractedData] = useState<any>(null);
+
+    useEffect(() => {
+        setExtractedData(null);
+    }, [selectedId]);
 
     const loadFaxes = async () => {
         try {
@@ -39,6 +45,20 @@ export default function FaxInbox({ filter = 'inbox', selectedId, onSelect }: Fax
     useEffect(() => {
         loadFaxes();
     }, []);
+
+    const handleExtract = async () => {
+        if (!selectedId) return;
+        setIsExtracting(true);
+        try {
+            const { analyzeFax } = await import('@/lib/actions');
+            const data = await analyzeFax(selectedId);
+            setExtractedData(data);
+        } catch (error) {
+            console.error('Failed to analyze fax:', error);
+        } finally {
+            setIsExtracting(false);
+        }
+    };
 
     const filteredFaxes = faxes.filter(fax => {
         if (filter === 'inbox') return fax.direction === 'INBOUND';
@@ -142,6 +162,94 @@ export default function FaxInbox({ filter = 'inbox', selectedId, onSelect }: Fax
                         )}
                     </div>
                 ))
+            )}
+
+            {/* AI Extraction Panel */}
+            {selectedId && (
+                <div style={{
+                    margin: '1rem',
+                    padding: '1rem',
+                    background: 'rgba(var(--primary-rgb), 0.03)',
+                    border: '1px solid rgba(var(--primary-rgb), 0.1)',
+                    borderRadius: '12px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '0.5rem'
+                }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--primary)', fontWeight: 'bold', fontSize: '0.8rem' }}>
+                            <Sparkles size={14} />
+                            AI SMART EXTRACT
+                        </div>
+                        {!extractedData && (
+                            <button
+                                onClick={handleExtract}
+                                disabled={isExtracting}
+                                style={{
+                                    fontSize: '0.7rem',
+                                    padding: '4px 10px',
+                                    borderRadius: '6px',
+                                    background: 'var(--primary)',
+                                    color: 'white',
+                                    border: 'none',
+                                    cursor: 'pointer',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '4px'
+                                }}
+                            >
+                                {isExtracting ? <Loader2 size={12} className="animate-spin" /> : <Search size={12} />}
+                                {isExtracting ? 'Extracting...' : 'Analyze PDF'}
+                            </button>
+                        )}
+                    </div>
+
+                    {extractedData ? (
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+                            <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Category</span>
+                                <span style={{ fontSize: '0.8rem', fontWeight: 'bold', color: 'white', textTransform: 'capitalize' }}>
+                                    {extractedData.category.replace('_', ' ')}
+                                </span>
+                            </div>
+                            <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Patient</span>
+                                <span style={{ fontSize: '0.8rem', fontWeight: 'bold', color: 'white' }}>
+                                    {extractedData.patientName || 'Unknown'} {extractedData.patientDob ? `(${extractedData.patientDob})` : ''}
+                                </span>
+                            </div>
+                            <div style={{ display: 'flex', flexDirection: 'column', gridColumn: 'span 2' }}>
+                                <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>AI Summary</span>
+                                <p style={{ fontSize: '0.75rem', color: 'var(--text-main)', margin: '2px 0 0 0', lineHeight: '1.4' }}>
+                                    {extractedData.summary}
+                                </p>
+                            </div>
+                            {extractedData.entities && extractedData.entities.length > 0 && (
+                                <div style={{ display: 'flex', flexDirection: 'column', gridColumn: 'span 2' }}>
+                                    <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Clinical Entities</span>
+                                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginTop: '4px' }}>
+                                        {extractedData.entities.map((m: any, i: number) => (
+                                            <span key={i} style={{
+                                                background: 'rgba(var(--primary-rgb), 0.1)',
+                                                padding: '2px 6px',
+                                                borderRadius: '4px',
+                                                fontSize: '9px',
+                                                color: 'var(--primary)',
+                                                border: '1px solid rgba(var(--primary-rgb), 0.2)'
+                                            }}>
+                                                {typeof m === 'string' ? m : m.text || JSON.stringify(m)}
+                                            </span>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    ) : (
+                        <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', margin: 0 }}>
+                            Select &apos;Analyze PDF&apos; to automatically extract patient and clinical data from this fax.
+                        </p>
+                    )}
+                </div>
             )}
         </div>
     );

@@ -457,5 +457,342 @@ CREATE TABLE IF NOT EXISTS AuditLog (
     createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
+-- AIAnalysis
+-- Stores AI model outputs and analysis results
+CREATE TABLE IF NOT EXISTS AIAnalysis (
+    id TEXT PRIMARY KEY,
+    modelName TEXT NOT NULL,  -- 'phi3:mini', 'ClinicalBERT', 'CheXNet', etc.
+    modelVersion TEXT,
+    inputType TEXT NOT NULL,  -- 'TEXT', 'IMAGE', 'STRUCTURED_DATA'
+    inputId TEXT,  -- References Assessment.id, Document.id, Claim.id, etc.
+    outputData TEXT NOT NULL,  -- JSON string of AI results
+    confidenceScore REAL,  -- 0.0 to 1.0
+    reviewStatus TEXT DEFAULT 'PENDING',  -- 'PENDING', 'APPROVED', 'REJECTED'
+    reviewedBy TEXT,  -- User.id who validated the AI output
+    organizationId TEXT NOT NULL,
+    createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (reviewedBy) REFERENCES User(id),
+    FOREIGN KEY (organizationId) REFERENCES Organization(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_ai_analysis_input ON AIAnalysis(inputType, inputId);
+CREATE INDEX IF NOT EXISTS idx_ai_analysis_review ON AIAnalysis(reviewStatus, organizationId);
+
+-- EmbeddingCache
+-- Stores vector embeddings for RAG (Knowledge Base, clinical notes, etc.)
+CREATE TABLE IF NOT EXISTS EmbeddingCache (
+    id TEXT PRIMARY KEY,
+    content TEXT NOT NULL,
+    contentHash TEXT UNIQUE NOT NULL,  -- SHA-256 of content for dedup
+    embeddingModel TEXT NOT NULL,  -- 'all-MiniLM-L6-v2', etc.
+    embedding BLOB NOT NULL,  -- Vector embedding stored as binary
+    sourceType TEXT,  -- 'KnowledgeBase', 'Assessment', 'Document'
+    sourceId TEXT,  -- Reference to original record
+    createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_embedding_hash ON EmbeddingCache(contentHash);
+CREATE INDEX IF NOT EXISTS idx_embedding_source ON EmbeddingCache(sourceType, sourceId);
+
 -- Add ClaimId index/FK to Visit if needed, or handle in app logic
 -- Ignoring circular FK for now, just relying on id matching.
+
+-- Phase 2: High-Impact Clinical Modules Extensions
+
+CREATE TABLE IF NOT EXISTS EmergencyVisit (
+    id TEXT PRIMARY KEY,
+    patientId TEXT NOT NULL,
+    chiefComplaint TEXT NOT NULL,
+    arrivalTime DATETIME NOT NULL,
+    status TEXT DEFAULT 'WAITING',
+    esiScore INTEGER,
+    predictedWaitTime INTEGER,
+    organizationId TEXT,
+    createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (patientId) REFERENCES Contact(id) ON DELETE CASCADE,
+    FOREIGN KEY (organizationId) REFERENCES Organization(id) ON DELETE SET NULL
+);
+
+CREATE TABLE IF NOT EXISTS ClinicalNote (
+    id TEXT PRIMARY KEY,
+    patientId TEXT NOT NULL,
+    providerId TEXT NOT NULL,
+    encounterId TEXT,
+    visitId TEXT,
+    type TEXT NOT NULL, -- SOAP, ADMISSION, PROGRESS, DISCHARGE
+    content TEXT NOT NULL, -- JSON structure with soap fields
+    summary TEXT,
+    status TEXT DEFAULT 'DRAFT', -- DRAFT, SIGNED, AMENDED
+    signedAt DATETIME,
+    createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (patientId) REFERENCES Contact(id) ON DELETE CASCADE,
+    FOREIGN KEY (providerId) REFERENCES User(id),
+    FOREIGN KEY (visitId) REFERENCES Visit(id)
+);
+
+CREATE TABLE IF NOT EXISTS Diagnosis (
+    id TEXT PRIMARY KEY,
+    patientId TEXT NOT NULL,
+    code TEXT NOT NULL, -- ICD-10
+    description TEXT NOT NULL,
+    type TEXT DEFAULT 'ADMISSION', -- ADMISSION, DISCHARGE, CHRONIC
+    status TEXT DEFAULT 'ACTIVE', -- ACTIVE, RESOLVED
+    diagnosedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (patientId) REFERENCES Contact(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS Medication (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    code TEXT, -- RxNorm
+    description TEXT,
+    strength TEXT,
+    form TEXT,
+    manufacturer TEXT,
+    createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS Prescription (
+    id TEXT PRIMARY KEY,
+    patientId TEXT NOT NULL,
+    providerId TEXT NOT NULL,
+    medicationId TEXT, 
+    medicationName TEXT, -- Fallback if not linked
+    dosage TEXT NOT NULL,
+    frequency TEXT NOT NULL,
+    route TEXT,
+    quantity REAL,
+    refills INTEGER DEFAULT 0,
+    startDate DATETIME,
+    endDate DATETIME,
+    status TEXT DEFAULT 'ACTIVE', -- ACTIVE, DISCONTINUED, EXPIRED
+    createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (patientId) REFERENCES Contact(id) ON DELETE CASCADE,
+    FOREIGN KEY (providerId) REFERENCES User(id),
+    FOREIGN KEY (medicationId) REFERENCES Medication(id)
+);
+
+CREATE TABLE IF NOT EXISTS VitalSign (
+    id TEXT PRIMARY KEY,
+    patientId TEXT NOT NULL,
+    recordedBy TEXT,
+    visitId TEXT,
+    type TEXT NOT NULL, -- BP_SYSTOLIC, BP_DIASTOLIC, HR, RR, SPO2, TEMP, WEIGHT, GLUCOSE
+    value REAL NOT NULL,
+    unit TEXT NOT NULL,
+    recordedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (patientId) REFERENCES Contact(id) ON DELETE CASCADE,
+    FOREIGN KEY (visitId) REFERENCES Visit(id),
+    FOREIGN KEY (recordedBy) REFERENCES User(id)
+);
+
+CREATE TABLE IF NOT EXISTS ClinicalAlert (
+    id TEXT PRIMARY KEY,
+    patientId TEXT NOT NULL,
+    type TEXT NOT NULL, -- SEPSIS_RISK, DETERIORATION, LAB_CRITICAL, FALL_RISK
+    severity TEXT NOT NULL, -- LOW, MEDIUM, HIGH, CRITICAL
+    score REAL,
+    message TEXT NOT NULL,
+    status TEXT DEFAULT 'OPEN', -- OPEN, ACKNOWLEDGED, RESOLVED, FALSE_POSITIVE
+    triggeredAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+    resolvedAt DATETIME,
+    resolvedBy TEXT,
+    FOREIGN KEY (patientId) REFERENCES Contact(id) ON DELETE CASCADE,
+    FOREIGN KEY (resolvedBy) REFERENCES User(id)
+);
+
+-- Phase 3: Hospital Operations Extensions
+
+CREATE TABLE IF NOT EXISTS OperatingRoom (
+    id TEXT PRIMARY KEY,
+    organizationId TEXT NOT NULL,
+    name TEXT NOT NULL,
+    type TEXT, -- GENERAL, ORTHO, CARDIAC
+    status TEXT DEFAULT 'AVAILABLE', -- AVAILABLE, IN_USE, CLEANING, MAINTENANCE
+    currentCaseId TEXT,
+    FOREIGN KEY (organizationId) REFERENCES Organization(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS SurgicalCase (
+    id TEXT PRIMARY KEY,
+    patientId TEXT NOT NULL,
+    surgeonId TEXT NOT NULL,
+    operatingRoomId TEXT,
+    procedureName TEXT NOT NULL,
+    procedureCode TEXT, -- CPT
+    scheduledStartTime DATETIME,
+    estimatedDuration INTEGER, -- minutes
+    actualStartTime DATETIME,
+    actualEndTime DATETIME,
+    status TEXT DEFAULT 'SCHEDULED',
+    FOREIGN KEY (patientId) REFERENCES Contact(id),
+    FOREIGN KEY (surgeonId) REFERENCES User(id),
+    FOREIGN KEY (operatingRoomId) REFERENCES OperatingRoom(id)
+);
+
+CREATE TABLE IF NOT EXISTS HospitalBed (
+    id TEXT PRIMARY KEY,
+    organizationId TEXT NOT NULL,
+    roomNumber TEXT NOT NULL,
+    bedNumber TEXT NOT NULL,
+    ward TEXT,
+    department TEXT, -- ICU, MEDSURG, ER
+    status TEXT DEFAULT 'AVAILABLE', -- AVAILABLE, OCCUPIED, CLEANING
+    currentPatientId TEXT,
+    FOREIGN KEY (organizationId) REFERENCES Organization(id) ON DELETE CASCADE,
+    FOREIGN KEY (currentPatientId) REFERENCES Contact(id)
+);
+
+CREATE TABLE IF NOT EXISTS LabOrder (
+    id TEXT PRIMARY KEY,
+    patientId TEXT NOT NULL,
+    orderingProviderId TEXT NOT NULL,
+    testCode TEXT, -- LOINC
+    testName TEXT NOT NULL,
+    priority TEXT DEFAULT 'ROUTINE',
+    status TEXT DEFAULT 'ORDERED', -- ORDERED, COLLECTED, RECEIVED, COMPLETED
+    orderedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+    completedAt DATETIME,
+    FOREIGN KEY (patientId) REFERENCES Contact(id) ON DELETE CASCADE,
+    FOREIGN KEY (orderingProviderId) REFERENCES User(id)
+);
+
+CREATE TABLE IF NOT EXISTS LabResult (
+    id TEXT PRIMARY KEY,
+    orderId TEXT NOT NULL,
+    componentName TEXT NOT NULL,
+    value TEXT NOT NULL,
+    unit TEXT,
+    referenceRange TEXT,
+    isAbnormal BOOLEAN DEFAULT 0,
+    isCritical BOOLEAN DEFAULT 0,
+    FOREIGN KEY (orderId) REFERENCES LabOrder(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS RadiographicStudy (
+    id TEXT PRIMARY KEY,
+    patientId TEXT NOT NULL,
+    orderingProviderId TEXT,
+    modality TEXT NOT NULL, -- XRAY, CT, MRI, US
+    bodyPart TEXT,
+    status TEXT DEFAULT 'ORDERED',
+    studyDate DATETIME,
+    imageUrl TEXT, -- Link to PACS/storage
+    reportText TEXT,
+    findings TEXT, -- Struct or JSON
+    FOREIGN KEY (patientId) REFERENCES Contact(id) ON DELETE CASCADE,
+    FOREIGN KEY (orderingProviderId) REFERENCES User(id)
+);
+
+-- Phase 4: Administrative Extensions (Claim already exists)
+
+CREATE TABLE IF NOT EXISTS Referral (
+    id TEXT PRIMARY KEY,
+    patientId TEXT NOT NULL,
+    fromProviderId TEXT,
+    toProviderId TEXT,
+    specialty TEXT,
+    reason TEXT,
+    priority TEXT DEFAULT 'ROUTINE',
+    status TEXT DEFAULT 'PENDING',
+    createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (patientId) REFERENCES Contact(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS InventoryItem (
+    id TEXT PRIMARY KEY,
+    organizationId TEXT NOT NULL,
+    name TEXT NOT NULL,
+    sku TEXT,
+    category TEXT,
+    quantityOnHand INTEGER DEFAULT 0,
+    parLevel INTEGER,
+    unitCost REAL,
+    FOREIGN KEY (organizationId) REFERENCES Organization(id) ON DELETE CASCADE
+);
+
+-- Phase 5: Specialty Extensions
+
+CREATE TABLE IF NOT EXISTS OncologyRegimen (
+    id TEXT PRIMARY KEY,
+    patientId TEXT NOT NULL,
+    name TEXT NOT NULL,
+    cancerType TEXT,
+    stage TEXT,
+    startDate DATETIME,
+    status TEXT DEFAULT 'ACTIVE',
+    FOREIGN KEY (patientId) REFERENCES Contact(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS PrenatalRecord (
+    id TEXT PRIMARY KEY,
+    patientId TEXT NOT NULL,
+    edd DATETIME, -- Estimated Due Date
+    gravida INTEGER,
+    para INTEGER,
+    bloodType TEXT,
+    riskAssessment TEXT,
+    FOREIGN KEY (patientId) REFERENCES Contact(id) ON DELETE CASCADE
+);
+
+-- Phase 6 & 7: Patient & Research
+
+CREATE TABLE IF NOT EXISTS TelehealthSession (
+    id TEXT PRIMARY KEY,
+    patientId TEXT NOT NULL,
+    providerId TEXT NOT NULL,
+    scheduledTime DATETIME,
+    duration INTEGER,
+    status TEXT DEFAULT 'SCHEDULED',
+    meetingUrl TEXT,
+    FOREIGN KEY (patientId) REFERENCES Contact(id) ON DELETE CASCADE,
+    FOREIGN KEY (providerId) REFERENCES User(id)
+);
+
+CREATE TABLE IF NOT EXISTS DeviceReading (
+    id TEXT PRIMARY KEY,
+    patientId TEXT NOT NULL,
+    deviceType TEXT NOT NULL,
+    deviceId TEXT,
+    readingType TEXT NOT NULL,
+    value REAL NOT NULL,
+    unit TEXT,
+    recordedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (patientId) REFERENCES Contact(id) ON DELETE CASCADE
+);
+
+-- Tag
+CREATE TABLE IF NOT EXISTS Tag (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    color TEXT DEFAULT '#3b82f6',
+    organizationId TEXT,
+    createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (organizationId) REFERENCES Organization(id) ON DELETE CASCADE,
+    UNIQUE(organizationId, name)
+);
+
+-- ContactTag
+CREATE TABLE IF NOT EXISTS ContactTag (
+    contactId TEXT NOT NULL,
+    tagId TEXT NOT NULL,
+    assignedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (contactId, tagId),
+    FOREIGN KEY (contactId) REFERENCES Contact(id) ON DELETE CASCADE,
+    FOREIGN KEY (tagId) REFERENCES Tag(id) ON DELETE CASCADE
+);
+
+-- UserTag
+CREATE TABLE IF NOT EXISTS UserTag (
+    userId TEXT NOT NULL,
+    tagId TEXT NOT NULL,
+    assignedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (userId, tagId),
+    FOREIGN KEY (userId) REFERENCES User(id) ON DELETE CASCADE,
+    FOREIGN KEY (tagId) REFERENCES Tag(id) ON DELETE CASCADE
+);

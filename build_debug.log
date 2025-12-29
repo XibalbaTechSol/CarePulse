@@ -1,0 +1,261 @@
+
+> temp@0.1.0 build
+> next build
+
+⚠ Warning: Next.js inferred your workspace root, but it may not be correct.
+ We detected multiple lockfiles and selected the directory of /home/xibalbasolutions/package-lock.json as the root directory.
+ To silence this warning, set `turbopack.root` in your Next.js config, or consider removing one of the lockfiles if it's not needed.
+   See https://nextjs.org/docs/app/api-reference/config/next-config-js/turbopack#root-directory for more information.
+ Detected additional lockfiles: 
+   * /home/xibalbasolutions/CAREPULSE/package-lock.json
+
+▲ Next.js 16.1.0 (Turbopack)
+- Environments: .env
+
+  Creating an optimized production build ...
+
+> Build error occurred
+Error: Turbopack build failed with 10 errors:
+./CAREPULSE/src/app/dashboard/admin/credentialing/page.tsx:1:27
+Ecmascript file had an error
+[0m[31m[1m>[22m[39m[90m 1 |[39m [36mimport[39m [33mReact[39m[33m,[39m { useState[33m,[39m useEffect } [36mfrom[39m [32m'react'[39m[33m;[39m
+ [90m   |[39m                           [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+ [90m 2 |[39m [36mimport[39m { [33mModuleLayout[39m } [36mfrom[39m [32m'@/components/modules/ModuleLayout'[39m[33m;[39m
+ [90m 3 |[39m [36mimport[39m { [33mBadgeCheck[39m[33m,[39m [33mFileText[39m[33m,[39m [33mAlertTriangle[39m[33m,[39m [33mShieldCheck[39m[33m,[39m [33mUpload[39m } [36mfrom[39m [32m'lucide-react'[39m[33m;[39m
+ [90m 4 |[39m [36mimport[39m { [33mCard[39m[33m,[39m [33mBadge[39m[33m,[39m [33mButton[39m } [36mfrom[39m [32m'@/components/nord'[39m[33m;[39m[0m
+
+You're importing a component that needs `useEffect`. This React Hook only works in a Client Component. To fix, mark the file (or its parent) with the `"use client"` directive.
+
+ Learn more: https://nextjs.org/docs/app/api-reference/directives/use-client
+
+
+
+Import trace:
+  App Route:
+    ./CAREPULSE/src/app/dashboard/admin/credentialing/page.tsx
+    ./CAREPULSE/src/lib/db-sql.ts
+    ./CAREPULSE/src/app/api/chat/route.ts
+
+
+./CAREPULSE/src/app/dashboard/admin/credentialing/page.tsx:1:17
+Ecmascript file had an error
+[0m[31m[1m>[22m[39m[90m 1 |[39m [36mimport[39m [33mReact[39m[33m,[39m { useState[33m,[39m useEffect } [36mfrom[39m [32m'react'[39m[33m;[39m
+ [90m   |[39m                 [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+ [90m 2 |[39m [36mimport[39m { [33mModuleLayout[39m } [36mfrom[39m [32m'@/components/modules/ModuleLayout'[39m[33m;[39m
+ [90m 3 |[39m [36mimport[39m { [33mBadgeCheck[39m[33m,[39m [33mFileText[39m[33m,[39m [33mAlertTriangle[39m[33m,[39m [33mShieldCheck[39m[33m,[39m [33mUpload[39m } [36mfrom[39m [32m'lucide-react'[39m[33m;[39m
+ [90m 4 |[39m [36mimport[39m { [33mCard[39m[33m,[39m [33mBadge[39m[33m,[39m [33mButton[39m } [36mfrom[39m [32m'@/components/nord'[39m[33m;[39m[0m
+
+You're importing a component that needs `useState`. This React Hook only works in a Client Component. To fix, mark the file (or its parent) with the `"use client"` directive.
+
+ Learn more: https://nextjs.org/docs/app/api-reference/directives/use-client
+
+
+
+Import trace:
+  App Route:
+    ./CAREPULSE/src/app/dashboard/admin/credentialing/page.tsx
+    ./CAREPULSE/src/lib/db-sql.ts
+    ./CAREPULSE/src/app/api/chat/route.ts
+
+
+./CAREPULSE/src/app/dashboard/admin/referrals/page.tsx:1:27
+Ecmascript file had an error
+[0m[31m[1m>[22m[39m[90m 1 |[39m [36mimport[39m [33mReact[39m[33m,[39m { useState[33m,[39m useEffect } [36mfrom[39m [32m'react'[39m[33m;[39m
+ [90m   |[39m                           [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+ [90m 2 |[39m [36mimport[39m { [33mModuleLayout[39m } [36mfrom[39m [32m'@/components/modules/ModuleLayout'[39m[33m;[39m
+ [90m 3 |[39m [36mimport[39m { [33mNetwork[39m[33m,[39m [33mSend[39m[33m,[39m [33mUserPlus[39m[33m,[39m [33mCheckCircle[39m[33m,[39m [33mClock[39m } [36mfrom[39m [32m'lucide-react'[39m[33m;[39m
+ [90m 4 |[39m [36mimport[39m { [33mCard[39m[33m,[39m [33mBadge[39m[33m,[39m [33mButton[39m[33m,[39m [33mInput[39m } [36mfrom[39m [32m'@/components/nord'[39m[33m;[39m[0m
+
+You're importing a component that needs `useEffect`. This React Hook only works in a Client Component. To fix, mark the file (or its parent) with the `"use client"` directive.
+
+ Learn more: https://nextjs.org/docs/app/api-reference/directives/use-client
+
+
+
+Import trace:
+  App Route:
+    ./CAREPULSE/src/app/dashboard/admin/referrals/page.tsx
+    ./CAREPULSE/src/lib/db-sql.ts
+    ./CAREPULSE/src/app/api/chat/route.ts
+
+
+./CAREPULSE/src/app/dashboard/admin/referrals/page.tsx:1:17
+Ecmascript file had an error
+[0m[31m[1m>[22m[39m[90m 1 |[39m [36mimport[39m [33mReact[39m[33m,[39m { useState[33m,[39m useEffect } [36mfrom[39m [32m'react'[39m[33m;[39m
+ [90m   |[39m                 [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+ [90m 2 |[39m [36mimport[39m { [33mModuleLayout[39m } [36mfrom[39m [32m'@/components/modules/ModuleLayout'[39m[33m;[39m
+ [90m 3 |[39m [36mimport[39m { [33mNetwork[39m[33m,[39m [33mSend[39m[33m,[39m [33mUserPlus[39m[33m,[39m [33mCheckCircle[39m[33m,[39m [33mClock[39m } [36mfrom[39m [32m'lucide-react'[39m[33m;[39m
+ [90m 4 |[39m [36mimport[39m { [33mCard[39m[33m,[39m [33mBadge[39m[33m,[39m [33mButton[39m[33m,[39m [33mInput[39m } [36mfrom[39m [32m'@/components/nord'[39m[33m;[39m[0m
+
+You're importing a component that needs `useState`. This React Hook only works in a Client Component. To fix, mark the file (or its parent) with the `"use client"` directive.
+
+ Learn more: https://nextjs.org/docs/app/api-reference/directives/use-client
+
+
+
+Import trace:
+  App Route:
+    ./CAREPULSE/src/app/dashboard/admin/referrals/page.tsx
+    ./CAREPULSE/src/lib/db-sql.ts
+    ./CAREPULSE/src/app/api/chat/route.ts
+
+
+./CAREPULSE/src/app/dashboard/crm/intake/page.tsx:4:8
+Ecmascript file had an error
+[0m [90m 2 |[39m
+ [90m 3 |[39m [36mimport[39m [33mReact[39m [36mfrom[39m [32m'react'[39m[33m;[39m
+[31m[1m>[22m[39m[90m 4 |[39m [36mimport[39m [33mReact[39m [36mfrom[39m [32m'react'[39m[33m;[39m
+ [90m   |[39m        [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+ [90m 5 |[39m [36mimport[39m [33mNordIntakeForm[39m [36mfrom[39m [32m'@/components/crm/NordIntakeForm'[39m[33m;[39m
+ [90m 6 |[39m
+ [90m 7 |[39m [36mexport[39m [36mdefault[39m [36mfunction[39m [33mAddClientPage[39m() {[0m
+
+the name `React` is defined multiple times
+
+Import traces:
+  Client Component Browser:
+    ./CAREPULSE/src/app/dashboard/crm/intake/page.tsx [Client Component Browser]
+    ./CAREPULSE/src/app/dashboard/crm/intake/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./CAREPULSE/src/app/dashboard/crm/intake/page.tsx [Client Component SSR]
+    ./CAREPULSE/src/app/dashboard/crm/intake/page.tsx [Server Component]
+
+  App Route:
+    ./CAREPULSE/src/app/dashboard/crm/intake/page.tsx
+    ./CAREPULSE/src/lib/db-sql.ts
+    ./CAREPULSE/src/app/api/chat/route.ts
+
+
+./CAREPULSE/src/app/dashboard/lis/page.tsx:1:27
+Ecmascript file had an error
+[0m[31m[1m>[22m[39m[90m 1 |[39m [36mimport[39m [33mReact[39m[33m,[39m { useState[33m,[39m useEffect } [36mfrom[39m [32m'react'[39m[33m;[39m
+ [90m   |[39m                           [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+ [90m 2 |[39m [36mimport[39m { [33mModuleLayout[39m } [36mfrom[39m [32m'@/components/modules/ModuleLayout'[39m[33m;[39m
+ [90m 3 |[39m [36mimport[39m { [33mFlaskConical[39m[33m,[39m [33mTestTube[39m[33m,[39m [33mAlertTriangle[39m[33m,[39m [33mCheckCircle[39m[33m,[39m [33mClock[39m } [36mfrom[39m [32m'lucide-react'[39m[33m;[39m
+ [90m 4 |[39m [36mimport[39m { [33mCard[39m[33m,[39m [33mBadge[39m[33m,[39m [33mButton[39m[33m,[39m [33mInput[39m } [36mfrom[39m [32m'@/components/nord'[39m[33m;[39m[0m
+
+You're importing a component that needs `useEffect`. This React Hook only works in a Client Component. To fix, mark the file (or its parent) with the `"use client"` directive.
+
+ Learn more: https://nextjs.org/docs/app/api-reference/directives/use-client
+
+
+
+Import trace:
+  App Route:
+    ./CAREPULSE/src/app/dashboard/lis/page.tsx
+    ./CAREPULSE/src/lib/db-sql.ts
+    ./CAREPULSE/src/app/api/chat/route.ts
+
+
+./CAREPULSE/src/app/dashboard/lis/page.tsx:1:17
+Ecmascript file had an error
+[0m[31m[1m>[22m[39m[90m 1 |[39m [36mimport[39m [33mReact[39m[33m,[39m { useState[33m,[39m useEffect } [36mfrom[39m [32m'react'[39m[33m;[39m
+ [90m   |[39m                 [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+ [90m 2 |[39m [36mimport[39m { [33mModuleLayout[39m } [36mfrom[39m [32m'@/components/modules/ModuleLayout'[39m[33m;[39m
+ [90m 3 |[39m [36mimport[39m { [33mFlaskConical[39m[33m,[39m [33mTestTube[39m[33m,[39m [33mAlertTriangle[39m[33m,[39m [33mCheckCircle[39m[33m,[39m [33mClock[39m } [36mfrom[39m [32m'lucide-react'[39m[33m;[39m
+ [90m 4 |[39m [36mimport[39m { [33mCard[39m[33m,[39m [33mBadge[39m[33m,[39m [33mButton[39m[33m,[39m [33mInput[39m } [36mfrom[39m [32m'@/components/nord'[39m[33m;[39m[0m
+
+You're importing a component that needs `useState`. This React Hook only works in a Client Component. To fix, mark the file (or its parent) with the `"use client"` directive.
+
+ Learn more: https://nextjs.org/docs/app/api-reference/directives/use-client
+
+
+
+Import trace:
+  App Route:
+    ./CAREPULSE/src/app/dashboard/lis/page.tsx
+    ./CAREPULSE/src/lib/db-sql.ts
+    ./CAREPULSE/src/app/api/chat/route.ts
+
+
+./CAREPULSE/src/app/dashboard/radiology/page.tsx:1:27
+Ecmascript file had an error
+[0m[31m[1m>[22m[39m[90m 1 |[39m [36mimport[39m [33mReact[39m[33m,[39m { useState[33m,[39m useEffect } [36mfrom[39m [32m'react'[39m[33m;[39m
+ [90m   |[39m                           [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+ [90m 2 |[39m [36mimport[39m { [33mModuleLayout[39m } [36mfrom[39m [32m'@/components/modules/ModuleLayout'[39m[33m;[39m
+ [90m 3 |[39m [36mimport[39m { [33mScan[39m[33m,[39m [33mFileImage[39m[33m,[39m [33mDownload[39m[33m,[39m [33mEye[39m[33m,[39m [33mUpload[39m } [36mfrom[39m [32m'lucide-react'[39m[33m;[39m
+ [90m 4 |[39m [36mimport[39m { [33mCard[39m[33m,[39m [33mBadge[39m[33m,[39m [33mButton[39m } [36mfrom[39m [32m'@/components/nord'[39m[33m;[39m[0m
+
+You're importing a component that needs `useEffect`. This React Hook only works in a Client Component. To fix, mark the file (or its parent) with the `"use client"` directive.
+
+ Learn more: https://nextjs.org/docs/app/api-reference/directives/use-client
+
+
+
+Import trace:
+  App Route:
+    ./CAREPULSE/src/app/dashboard/radiology/page.tsx
+    ./CAREPULSE/src/lib/db-sql.ts
+    ./CAREPULSE/src/app/api/chat/route.ts
+
+
+./CAREPULSE/src/app/dashboard/radiology/page.tsx:1:17
+Ecmascript file had an error
+[0m[31m[1m>[22m[39m[90m 1 |[39m [36mimport[39m [33mReact[39m[33m,[39m { useState[33m,[39m useEffect } [36mfrom[39m [32m'react'[39m[33m;[39m
+ [90m   |[39m                 [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+ [90m 2 |[39m [36mimport[39m { [33mModuleLayout[39m } [36mfrom[39m [32m'@/components/modules/ModuleLayout'[39m[33m;[39m
+ [90m 3 |[39m [36mimport[39m { [33mScan[39m[33m,[39m [33mFileImage[39m[33m,[39m [33mDownload[39m[33m,[39m [33mEye[39m[33m,[39m [33mUpload[39m } [36mfrom[39m [32m'lucide-react'[39m[33m;[39m
+ [90m 4 |[39m [36mimport[39m { [33mCard[39m[33m,[39m [33mBadge[39m[33m,[39m [33mButton[39m } [36mfrom[39m [32m'@/components/nord'[39m[33m;[39m[0m
+
+You're importing a component that needs `useState`. This React Hook only works in a Client Component. To fix, mark the file (or its parent) with the `"use client"` directive.
+
+ Learn more: https://nextjs.org/docs/app/api-reference/directives/use-client
+
+
+
+Import trace:
+  App Route:
+    ./CAREPULSE/src/app/dashboard/radiology/page.tsx
+    ./CAREPULSE/src/lib/db-sql.ts
+    ./CAREPULSE/src/app/api/chat/route.ts
+
+
+./CAREPULSE/src/components/ai/AIInsightPanel.tsx:1:17
+Ecmascript file had an error
+[0m[31m[1m>[22m[39m[90m 1 |[39m [36mimport[39m [33mReact[39m[33m,[39m { useState } [36mfrom[39m [32m'react'[39m[33m;[39m
+ [90m   |[39m                 [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+ [90m 2 |[39m [36mimport[39m { [33mCard[39m[33m,[39m [33mButton[39m } [36mfrom[39m [32m'@/components/nord'[39m[33m;[39m
+ [90m 3 |[39m [36mimport[39m { [33mLightbulb[39m[33m,[39m [33mRefreshCw[39m[33m,[39m [33mMessageSquare[39m } [36mfrom[39m [32m'lucide-react'[39m[33m;[39m
+ [90m 4 |[39m[0m
+
+You're importing a component that needs `useState`. This React Hook only works in a Client Component. To fix, mark the file (or its parent) with the `"use client"` directive.
+
+ Learn more: https://nextjs.org/docs/app/api-reference/directives/use-client
+
+
+
+Import traces:
+  App Route:
+    ./CAREPULSE/src/components/ai/AIInsightPanel.tsx
+    ./CAREPULSE/src/lib/db-sql.ts
+    ./CAREPULSE/src/app/api/chat/route.ts
+
+  Server Component:
+    ./CAREPULSE/src/components/ai/AIInsightPanel.tsx
+    ./CAREPULSE/src/components/modules/ModuleLayout.tsx
+    ./CAREPULSE/src/app/dashboard/admin/credentialing/page.tsx
+
+  Client Component Browser:
+    ./CAREPULSE/src/components/ai/AIInsightPanel.tsx [Client Component Browser]
+    ./CAREPULSE/src/components/modules/ModuleLayout.tsx [Client Component Browser]
+    ./CAREPULSE/src/app/dashboard/admin/analytics/page.tsx [Client Component Browser]
+    ./CAREPULSE/src/app/dashboard/admin/analytics/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./CAREPULSE/src/components/ai/AIInsightPanel.tsx [Client Component SSR]
+    ./CAREPULSE/src/components/modules/ModuleLayout.tsx [Client Component SSR]
+    ./CAREPULSE/src/app/dashboard/admin/analytics/page.tsx [Client Component SSR]
+    ./CAREPULSE/src/app/dashboard/admin/analytics/page.tsx [Server Component]
+
+
+    at <unknown> (./CAREPULSE/src/app/dashboard/admin/credentialing/page.tsx:1:27)
+    at <unknown> (./CAREPULSE/src/app/dashboard/admin/credentialing/page.tsx:1:17)
+    at <unknown> (./CAREPULSE/src/app/dashboard/admin/referrals/page.tsx:1:27)
+    at <unknown> (./CAREPULSE/src/app/dashboard/admin/referrals/page.tsx:1:17)
+    at <unknown> (./CAREPULSE/src/app/dashboard/crm/intake/page.tsx:4:8)
+    at <unknown> (./CAREPULSE/src/app/dashboard/lis/page.tsx:1:27)
+    at <unknown> (./CAREPULSE/src/app/dashboard/lis/page.tsx:1:17)
+    at <unknown> (./CAREPULSE/src/app/dashboard/radiology/page.tsx:1:27)
+    at <unknown> (./CAREPULSE/src/app/dashboard/radiology/page.tsx:1:17)
+    at <unknown> (./CAREPULSE/src/components/ai/AIInsightPanel.tsx:1:17)

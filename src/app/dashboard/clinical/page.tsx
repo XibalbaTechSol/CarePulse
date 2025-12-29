@@ -1,7 +1,5 @@
 'use client';
 
-'use client';
-
 import React, { useState } from 'react';
 import {
     Stethoscope,
@@ -16,11 +14,15 @@ import {
     FileText,
     Signature,
     ClipboardList,
-    TrendingUp
+    TrendingUp,
+    Sparkles,
+    Loader2,
 } from 'lucide-react';
+import { Button, Card, Badge } from '@/components/nord';
 
 export default function ClinicalPOC() {
     const [activeTab, setActiveTab] = useState<'assessments' | 'mar' | 'notes' | 'signatures'>('assessments');
+    const [aiSummaries, setAiSummaries] = useState<Record<string, { summary: string; loading: boolean; error?: string }>>({});
 
     const assessments = [
         { id: 'M1021', question: 'Primary Diagnosis', answer: 'I10 - Essential (primary) hypertension', status: 'Complete' },
@@ -33,6 +35,56 @@ export default function ClinicalPOC() {
         { name: 'Metformin', dose: '500mg', freq: 'BID', time: '08:00 AM', status: 'Given' },
         { name: 'Atorvastatin', dose: '20mg', freq: 'Daily', time: '08:00 PM', status: 'Due' },
     ];
+
+    const generateAISummary = async (assessmentId: string) => {
+        // Set loading state
+        setAiSummaries(prev => ({
+            ...prev,
+            [assessmentId]: { summary: '', loading: true }
+        }));
+
+        try {
+            // TODO: Replace with actual user/org IDs from auth context
+            const userId = 'demo-user-id';
+            const organizationId = 'demo-org-id';
+
+            const response = await fetch('/api/ai/summarize', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    assessmentId,
+                    userId,
+                    organizationId
+                })
+            });
+
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.error || 'Failed to generate summary');
+            }
+
+            const data = await response.json();
+
+            setAiSummaries(prev => ({
+                ...prev,
+                [assessmentId]: {
+                    summary: data.summary,
+                    loading: false
+                }
+            }));
+        } catch (error) {
+            setAiSummaries(prev => ({
+                ...prev,
+                [assessmentId]: {
+                    summary: '',
+                    loading: false,
+                    error: error instanceof Error ? error.message : 'Unknown error'
+                }
+            }));
+        }
+    };
 
     return (
         <div className="flex h-screen bg-white dark:bg-[#111a22] transition-colors duration-300 font-sans overflow-hidden">
@@ -145,10 +197,49 @@ export default function ClinicalPOC() {
                                         </span>
                                     </div>
                                     <p className="text-sm font-bold text-gray-900 dark:text-white mb-4">{item.question}</p>
-                                    <button className="w-full text-left px-4 py-3 bg-gray-50 dark:bg-[#111a22] border border-gray-200 dark:border-gray-700 rounded-lg text-xs text-gray-700 dark:text-gray-300 hover:border-blue-500 dark:hover:border-blue-400 transition-colors flex justify-between items-center group/btn">
+                                    <button className="w-full text-left px-4 py-3 bg-gray-50 dark:bg-[#111a22] border border-gray-200 dark:border-gray-700 rounded-lg text-xs text-gray-700 dark:text-gray-300 hover:border-blue-500 dark:hover:border-blue-400 transition-colors flex justify-between items-center group/btn mb-3">
                                         <span>{item.answer}</span>
                                         <ChevronRight size={14} className="text-gray-400 group-hover/btn:translate-x-1 transition-transform" />
                                     </button>
+
+                                    {/* AI Summary Section */}
+                                    <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800">
+                                        {!aiSummaries[item.id] ? (
+                                            <button
+                                                onClick={() => generateAISummary(item.id)}
+                                                className="flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white rounded-lg text-xs font-bold shadow-md shadow-purple-500/20 transition-all"
+                                            >
+                                                <Sparkles size={14} />
+                                                AI Summary
+                                            </button>
+                                        ) : aiSummaries[item.id].loading ? (
+                                            <div className="flex items-center gap-2 text-xs text-indigo-600 dark:text-indigo-400">
+                                                <Loader2 size={14} className="animate-spin" />
+                                                <span>Generating AI summary...</span>
+                                            </div>
+                                        ) : aiSummaries[item.id].error ? (
+                                            <div className="text-xs text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/10 p-3 rounded-lg border border-red-200 dark:border-red-900/30">
+                                                <p className="font-bold mb-1">Error:</p>
+                                                <p>{aiSummaries[item.id].error}</p>
+                                                <button
+                                                    onClick={() => generateAISummary(item.id)}
+                                                    className="mt-2 text-[10px] font-bold underline"
+                                                >
+                                                    Try Again
+                                                </button>
+                                            </div>
+                                        ) : (
+                                            <div className="bg-gradient-to-br from-purple-50 to-indigo-50 dark:from-purple-900/10 dark:to-indigo-900/10 p-4 rounded-lg border border-purple-200 dark:border-purple-900/30">
+                                                <div className="flex items-center gap-2 mb-2">
+                                                    <Sparkles size={12} className="text-purple-600 dark:text-purple-400" />
+                                                    <span className="text-[10px] font-black text-purple-600 dark:text-purple-400 uppercase">AI Summary</span>
+                                                </div>
+                                                <p className="text-xs text-gray-700 dark:text-gray-300 leading-relaxed">
+                                                    {aiSummaries[item.id].summary}
+                                                </p>
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
                             ))}
                         </div>
@@ -220,6 +311,48 @@ export default function ClinicalPOC() {
                                     ))}
                                 </div>
                             </div>
+                        </div>
+                    )}
+
+                    {activeTab === 'signatures' && (
+                        <div className="max-w-4xl mx-auto space-y-6 animate-in fade-in duration-300">
+                            <div className="flex justify-between items-center mb-4">
+                                <h3 className="text-sm font-black text-gray-400 uppercase tracking-widest">Pending Signatures</h3>
+                                <Badge variant="warning">2 Required</Badge>
+                            </div>
+
+                            <div className="space-y-4">
+                                {[
+                                    { type: 'Physician Order', date: '2025-12-24', status: 'Pending MD', icon: <User size={16} /> },
+                                    { type: 'Service Verification', date: '2025-12-25', status: 'Ready for Patient', icon: <Signature size={16} /> }
+                                ].map((doc, i) => (
+                                    <div key={i} className="bg-white dark:bg-[#1e293b] p-6 rounded-xl border border-gray-100 dark:border-gray-800 shadow-sm flex items-center justify-between group hover:border-blue-500/30 transition-all">
+                                        <div className="flex items-center gap-4">
+                                            <div className="w-10 h-10 rounded-lg bg-gray-50 dark:bg-[#111a22] flex items-center justify-center text-gray-400">
+                                                {doc.icon}
+                                            </div>
+                                            <div>
+                                                <p className="text-sm font-bold text-gray-900 dark:text-white">{doc.type}</p>
+                                                <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Dated: {doc.date}</p>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center gap-4">
+                                            <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{doc.status}</span>
+                                            <Button variant="primary" size="sm">Sign Now</Button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+
+                            <Card className="p-12 border-2 border-dashed border-gray-100 dark:border-gray-800 flex flex-col items-center justify-center text-gray-400">
+                                <div className="w-full max-w-md h-32 bg-gray-50 dark:bg-[#111a22] rounded-xl border border-gray-200 dark:border-gray-700 flex items-center justify-center italic text-xs mb-4">
+                                    Capture digital signature here...
+                                </div>
+                                <div className="flex gap-3">
+                                    <Button variant="ghost" size="sm">Clear</Button>
+                                    <Button variant="primary" size="sm">Submit Signature</Button>
+                                </div>
+                            </Card>
                         </div>
                     )}
                 </div>

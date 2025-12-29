@@ -1,22 +1,17 @@
-# Fax Module: Digital Cloud Faxing
+# Virtual Fax Module
 
-Seamlessly integrate traditional faxing into your digital workflow using the SRFax network.
+The Fax module allows for HIPAA-compliant digital faxing, replacing traditional hardware.
 
-## ✨ Key Features
+## Features
+- **Inbox**: View received faxes with status tracking.
+- **Composer**: Send faxes with cover sheets and file attachments.
+- **Contact Integration**: Select recipients directly from the CRM.
+- **Status Tracking**: Monitor transmission status (Queued, Sent, Failed).
 
-- **Fax Composer**: Upload and send documents as faxes with real-time status tracking.
-- **Fax Inbox**: Receive digital faxes directly in the dashboard.
-- **History**: Searchable log of sent and received faxes with downloadable PDF previews.
-- **SRFax Integration**: Backed by a high-reliability fax network.
+## Architecture
+- **Provider**: Integrated with SRFax / InterFAX (configurable).
+- **PDF Generation**: Auto-generates cover sheets.
+- **Storage**: Securely stores fax documents with audit logging.
 
-## ⚙️ Configuration
-
-1. Secure your **SRFax Account ID** and **Password**.
-2. Navigate to `Dashboard > Settings` to globally configure Fax credentials.
-3. Once configured, the system will automatically fetch incoming faxes and enable the composer.
-
-## 📂 Architecture
-
-- **Page**: `src/app/dashboard/fax/page.tsx`
-- **Actions**: `src/lib/actions/fax.ts` (SRFax API wrappers)
-- **Model**: `Fax` in `schema.prisma`.
+## Usage
+Navigate to `/dashboard/fax` to view the inbox or compose a new fax.

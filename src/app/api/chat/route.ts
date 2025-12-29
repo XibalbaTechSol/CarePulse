@@ -1,23 +1,16 @@
-// @ts-nocheck
-import { createOpenAI } from '@ai-sdk/openai';
 import { streamText, tool } from 'ai';
 import { sql } from '@/lib/db-sql';
 import { z } from 'zod';
+import { aiService } from '@/lib/ai/provider';
 
 // Allow streaming responses up to 60 seconds for thinking models
 export const maxDuration = 60;
 export const dynamic = 'force-dynamic';
 
-// Configuration for local LM Studio
-const lmstudio = createOpenAI({
-    baseURL: 'http://localhost:1234/v1',
-    apiKey: 'not-needed',
-});
-
 export async function POST(req: Request) {
     const { messages } = await req.json();
 
-    const systemPrompt = `You are the CarePulse AI Assistant, powered by the Kiwi Thinking Model.
+    const systemPrompt = `You are the CarePulse AI Assistant, powered by the Phi-3 Mini Model.
     You are an expert in home health care operations, regulations, and agency management.
     
     Current Date: ${new Date().toLocaleDateString()}
@@ -27,23 +20,23 @@ export async function POST(req: Request) {
     visits, and regulatory rules.
     
     Guidelines:
-    1. Always use deep reasoning (Chain-of-Thought) before providing a final answer.
+    1. Always provide accurate medical and administrative information.
     2. Cite specific agency data or regulations when answering.
     3. If information is missing, ask for clarification or suggest where it might be found.
     4. Maintain HIPAA compliance: only discuss patient info in the context of care management.`;
 
     const result = streamText({
-        model: lmstudio('kimi'),
+        model: aiService.getModel(),
         messages,
         system: systemPrompt,
         tools: {
             getAgencyData: tool({
                 description: 'Search for patient contacts, deals, or general agency records.',
-                parameters: z.object({
+                inputSchema: z.object({
                     query: z.string().describe('The name or keyword to search for in contacts/deals'),
                 }),
                 execute: async ({ query }) => {
-                    const contacts = sql.all<any>(`
+                    const contacts = sql.all(`
                         SELECT id, firstName, lastName, status, medicaidId 
                         FROM Contact 
                         WHERE firstName LIKE ? OR lastName LIKE ? OR company LIKE ?
@@ -54,7 +47,7 @@ export async function POST(req: Request) {
             }),
             getCareInsights: tool({
                 description: 'Fetch detailed care-related data including visits, care plans, and assessments.',
-                parameters: z.object({
+                inputSchema: z.object({
                     patientId: z.string().describe('The ID of the patient to fetch care data for'),
                 }),
                 execute: async ({ patientId }) => {
@@ -66,7 +59,7 @@ export async function POST(req: Request) {
             }),
             searchKnowledgeBase: tool({
                 description: 'Search agency policies, regulatory documents, and rules.',
-                parameters: z.object({
+                inputSchema: z.object({
                     query: z.string().describe('The regulatory or policy-related question'),
                 }),
                 execute: async ({ query }) => {
